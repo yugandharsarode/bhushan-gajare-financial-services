@@ -1,0 +1,145 @@
+GROUP - Value of Money & SIPs
+
+Calculator Name: SIP Calculator
+
+Example 1:
+Inputs:
+Monthly SIP Amount = 10000
+Lumpsum Investment (Rs.) (optional) = 0
+Expected Annual Return (%) = 12%
+Investment Period (Years) = 10
+
+Output:
+Total Amount Invested: Rs. 12,00,000
+Future Value of SIPs: Rs. 22,40,359
+Future Value of Lumpsum: Rs. 0
+
+Total Corpus Value: Rs. 22,40,359
+Estimated Profit: Rs. 10,40,359 
+
+Example 2:
+Inputs:
+Monthly SIP Amount = 1239
+Lumpsum Investment (Rs.) (optional) = 0
+Expected Annual Return (%) = 11%
+Investment Period (Years) = 8
+
+Output:
+Total Amount Invested: Rs. 1,18,944
+Future Value of SIPs: Rs. 1,86,665
+Future Value of Lumpsum: Rs. 0
+
+Total Corpus Value: Rs. 1,86,665
+Estimated Profit: Rs. 67,721 
+
+Example 3:
+Inputs:
+Monthly SIP Amount = 87832
+Lumpsum Investment (Rs.) (optional) = 0
+Expected Annual Return (%) = 14%
+Investment Period (Years) = 9
+
+Outputs:
+ Total Amount Invested: Rs. 94,85,856
+Future Value of SIPs: Rs. 1,82,13,624
+Future Value of Lumpsum: Rs. 0
+
+Total Corpus Value: Rs. 1,82,13,624
+Estimated Profit: Rs. 87,27,768 
+
+--------------------------------------------------------------------------------------------------------------------------------
+Calculator Name: Goal Based SIP Calculator
+
+Example 1:
+Inputs:
+Target Goal Amount (Rs.) = 50,00,000
+Initial Lumpsum Investment (Rs.) (optional) = 0
+Investment Period (Years) = 10
+Expected Annual Return (%) = 12
+
+Output:
+Required Monthly SIP: Rs. 22,317.85
+Future Value of Lumpsum: Rs. 0
+Projected Future Value from SIPs: Rs. 50,00,000
+Total Corpus Achieved (Goal): Rs. 50,00,000
+
+Example 2:
+Inputs:
+Target Goal Amount (Rs.) = 4,00,000
+Initial Lumpsum Investment (Rs.) (optional) = 25,000
+Investment Period (Years) = 11
+Expected Annual Return (%) = 13
+
+Output:
+ Required Monthly SIP: Rs. 1,086.62
+Future Value of Lumpsum: Rs. 95,897
+Projected Future Value from SIPs: Rs. 3,04,103
+Total Corpus Achieved (Goal): Rs. 4,00,000
+
+
+Example 3:
+Inputs:
+Target Goal Amount (Rs.) = 12,00,000
+Initial Lumpsum Investment (Rs.) (optional) = 26,589 
+Investment Period (Years) = 10
+Expected Annual Return (%) = 13
+
+Output:
+Required Monthly SIP: Rs. 4,696.10
+Future Value of Lumpsum: Rs. 90,258
+Projected Future Value from SIPs: Rs. 11,09,742
+Total Corpus Achieved (Goal): Rs. 12,00,000
+
+--------------------------------------------------------------------------------------------------------------------------------
+Calculator Name: Step-Up SIP Calculator
+
+Example 1:
+Inputs:
+Initial Monthly SIP Amount (Rs.) = 10,000
+Lumpsum Investment (Rs.) = 50,000
+Investment Period (Years) = 10
+Annual Step-Up Percentage (%) = 10
+Expected Annual Return (%) = 12
+
+Output:
+Total Amount Invested: Rs. 19,62,491
+Future Value of Lumpsum (estimated): Rs. 1,55,292
+Future Value of SIPs (estimated): Rs. 32,68,898
+
+Total Corpus Value: Rs. 34,24,191
+Estimated Profit: Rs. 14,61,700
+
+Example 2:
+Inputs:
+Initial Monthly SIP Amount (Rs.) = 5,000
+Lumpsum Investment (Rs.) = 1,00,000
+Investment Period (Years) = 8
+Annual Step-Up Percentage (%) = 9.5 
+Expected Annual Return (%) = 11
+
+Output:
+Total Amount Invested: Rs. 7,73,812
+Future Value of Lumpsum (estimated): Rs. 2,30,454
+Future Value of SIPs (estimated): Rs. 10,06,416
+
+Total Corpus Value: Rs. 12,36,870
+Estimated Profit: Rs. 4,63,058
+
+Example 3:
+Inputs:
+Initial Monthly SIP Amount (Rs.) = 12,767
+Lumpsum Investment (Rs.) = 40,000
+Investment Period (Years) = 7
+Annual Step-Up Percentage (%) = 3.5
+Expected Annual Return (%) = 9
+
+Output:
+Total Amount Invested: Rs. 12,31,836
+Future Value of Lumpsum (estimated): Rs. 73,122
+Future Value of SIPs (estimated): Rs. 16,22,560
+
+Total Corpus Value: Rs. 16,95,681
+Estimated Profit: Rs. 4,63,845
+
+--------------------------------------------------------------------------------------------------------------------------------
+

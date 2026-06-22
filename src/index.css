@@ -1,0 +1,221 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+
+  /* Unified Blue + Gold brand palette */
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #e8effb;
+  --color-brand-200: #d6e2f8;
+  --color-brand-300: #bfd1f3;
+  --color-brand-400: #6f89bd;
+  --color-brand-500: #0f3d91;
+  --color-brand-600: #0f3d91;
+  --color-brand-700: #0c3177;
+  --color-brand-800: #0b1f4d;
+  --color-brand-900: #071538;
+
+  --color-hydro-blue: #0f3d91;
+  --color-hydro-green: #d4af37;
+  --color-hydro-red: #d4af37;
+  --color-hydro-text: #334155;
+  --color-hydro-heading: #0b1f4d;
+  --color-hydro-subheading: #0f3d91;
+
+  --color-accent-500: #d4af37;
+  --color-accent-600: #b38f24;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-sans antialiased text-[#334155] bg-brand-50;
+}
+
+/* Brand typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.03em;
+  color: #0b1f4d;
+}
+
+/* Section heading system */
+.hydro-section-title {
+  @apply mb-8 text-center sm:mb-10;
+}
+
+.hydro-section-title h2 {
+  @apply mt-0 mb-3 text-3xl font-bold text-brand-800 sm:text-4xl;
+  line-height: 1.15;
+}
+
+.hydro-section-title .line-bar {
+  @apply mx-auto mt-1 block h-1 w-16 rounded-full bg-[#d4af37];
+  font-size: 0;
+  line-height: 0;
+}
+
+/* Primary button — brand blue with gold hover */
+.hydro-btn {
+  @apply inline-flex cursor-pointer items-center justify-center rounded-full border border-brand-600 bg-brand-600 px-7 py-3.5 text-sm font-medium text-white transition-all duration-300;
+  box-shadow: 0 8px 18px rgba(15, 61, 145, 0.26);
+}
+
+.hydro-btn:hover,
+.hydro-btn:focus {
+  @apply border-[#d4af37] bg-[#d4af37] text-brand-900 outline-none;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 12px 26px rgba(212, 175, 55, 0.36);
+}
+
+.hydro-btn:disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.hydro-btn:disabled:hover {
+  @apply bg-brand-600 text-white;
+  background: #0f3d91;
+}
+
+/* Outline button */
+.hydro-btn-outline {
+  @apply inline-flex items-center justify-center rounded-full border-2 border-brand-200 bg-transparent px-7 py-3.5 text-sm font-medium text-brand-700 transition-all duration-300;
+}
+
+.hydro-btn-outline:hover,
+.hydro-btn-outline:focus {
+  @apply border-[#d4af37] bg-[#d4af37] text-brand-900 outline-none;
+}
+
+.hydro-btn-secondary {
+  @apply inline-flex items-center justify-center rounded-full border-2 border-brand-500 bg-white px-7 py-3.5 text-sm font-medium text-brand-700 transition-all duration-300;
+  box-shadow: 0 6px 14px rgba(15, 61, 145, 0.12);
+}
+
+.hydro-btn-secondary:hover,
+.hydro-btn-secondary:focus {
+  @apply border-[#d4af37] bg-[#d4af37] text-brand-900 outline-none;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(212, 175, 55, 0.24);
+}
+
+/* Unified card system */
+.hydro-card {
+  @apply rounded-xl border border-brand-100 bg-white transition-all duration-300;
+  box-shadow: 0 10px 28px rgba(11, 31, 77, 0.08);
+}
+
+.hydro-card:hover {
+  box-shadow: 0 14px 30px rgba(11, 31, 77, 0.12);
+}
+
+/* Premium interactive card: blue default, gold hover */
+.premium-interactive-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #0b1f4d;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(8, 22, 56, 0.34);
+  transition: background-color 0.35s ease, color 0.35s ease, transform 0.35s ease,
+    box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.premium-interactive-card:hover {
+  background: #d4af37;
+  color: #0b1f4d;
+  border-color: #d4af37;
+  box-shadow: 0 16px 32px rgba(212, 175, 55, 0.34);
+  transform: translateY(-5px);
+}
+
+/* Kept for subtle overlays only */
+.hydro-gradient {
+  background: linear-gradient(135deg, #f8fbff 0%, #e8effb 100%);
+}
+
+.hydro-gradient-dark {
+  background: #0b1f4d;
+}
+
+.hydro-gradient-overlay {
+  background: linear-gradient(135deg, #f8fbff 0%, #e8effb 100%);
+  opacity: 1;
+}
+
+/* Hydro navbar shadow on scroll */
+.hydro-nav-shadow {
+  box-shadow: 0 8px 24px rgba(11, 31, 77, 0.08);
+}
+
+.page-kicker {
+  @apply text-xs font-semibold uppercase tracking-[0.18em] text-brand-600 sm:text-sm;
+}
+
+.page-hero-title {
+  @apply mt-1.5 text-3xl font-extrabold leading-tight tracking-tight text-brand-800 sm:text-4xl lg:text-5xl;
+}
+
+.page-hero-description {
+  @apply mt-2 max-w-3xl text-sm leading-relaxed text-[#334155] sm:text-base;
+}
+
+/* Subtle finance-themed dot pattern */
+.consultation-pattern {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgb(15 61 145 / 0.08) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+}
+
+.hero-dot-pattern {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgb(15 61 145 / 0.07) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+}
+
+@keyframes hero-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-animate-in {
+  animation: hero-fade-in-up 0.7s ease-out forwards;
+}
+
+.hero-animate-delay {
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+.hero-animate-delay-2 {
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+/* Hydro link hover */
+a.hydro-link {
+  @apply text-[#252525] transition-colors duration-500;
+}
+
+a.hydro-link:hover,
+a.hydro-link:focus {
+  @apply text-brand-600 outline-none;
+}
