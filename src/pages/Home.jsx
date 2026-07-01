@@ -1,6 +1,7 @@
 import Container from '../components/Container'
 import Hero from '../components/Hero'
 import Card from '../components/Card'
+import PartnerCarousel from '../components/PartnerCarousel'
 import ConsultationSection from '../components/ConsultationSection'
 import { useConsultation } from '../context/ConsultationContext'
 
@@ -52,6 +53,8 @@ function Home() {
           </div>
         </Container>
       </section>
+
+      <PartnerCarousel />
 
       <section className="relative bg-brand-800 py-12 text-white sm:py-14 lg:py-16">
         <Container className="text-center">

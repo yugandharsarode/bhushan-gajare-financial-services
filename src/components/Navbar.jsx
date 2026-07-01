@@ -93,18 +93,18 @@ function Navbar() {
       }`}
     >
       <Container>
-        <div className="flex h-16 items-center justify-between gap-4 py-1 lg:h-[4.5rem]">
+        <div className="flex h-[4.25rem] items-center justify-between gap-4 sm:h-[4.5rem] lg:h-[5.25rem]">
           <Link
             to="/"
-            className="shrink-0 rounded-md p-1 transition-opacity duration-300 hover:opacity-90"
+            className="inline-flex shrink-0 items-center transition-transform duration-300 ease-out hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/50"
             aria-label={`${siteInfo.name} home`}
           >
             <img
-              src="/bg-logo.jpg"
+              src="/bg-logo-removebg-preview.png"
               alt={siteInfo.name}
-              className="h-9 w-auto object-contain sm:h-10 lg:h-11"
-              width={220}
-              height={60}
+              className="h-10 w-auto object-contain sm:h-11 lg:h-14"
+              width={286}
+              height={192}
             />
           </Link>
 

@@ -219,3 +219,127 @@ a.hydro-link:hover,
 a.hydro-link:focus {
   @apply text-brand-600 outline-none;
 }
+
+/* Partner logo carousel */
+.partner-carousel-section {
+  box-shadow: inset 0 24px 48px -32px rgba(15, 61, 145, 0.08);
+}
+
+.partner-section-title h2 {
+  @apply text-brand-800;
+}
+
+.partner-carousel-viewport {
+  --partner-gap: 1.25rem;
+  --partner-duration: 72s;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+}
+
+.partner-carousel-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: var(--partner-gap);
+  padding-block: 0.5rem;
+  animation: partner-scroll var(--partner-duration) linear infinite;
+  will-change: transform;
+}
+
+.partner-carousel-viewport:hover .partner-carousel-track {
+  animation-play-state: paused;
+}
+
+.partner-logo-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 8.5rem;
+  height: 5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(15, 61, 145, 0.08);
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(11, 31, 77, 0.08);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.partner-logo-card:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 16px 32px rgba(11, 31, 77, 0.14);
+}
+
+.partner-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes partner-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - var(--partner-gap) / 2));
+  }
+}
+
+@media (min-width: 640px) {
+  .partner-carousel-viewport {
+    --partner-gap: 1.5rem;
+  }
+
+  .partner-logo-card {
+    width: 9.5rem;
+    height: 5.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .partner-carousel-viewport {
+    --partner-gap: 1.75rem;
+    --partner-duration: 84s;
+  }
+
+  .partner-logo-card {
+    width: 10.5rem;
+    height: 6rem;
+    padding: 0.875rem 1.125rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-carousel-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  .partner-carousel-viewport {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
