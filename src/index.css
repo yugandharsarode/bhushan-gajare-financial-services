@@ -135,6 +135,14 @@ h6 {
   transform: translateY(-5px);
 }
 
+.premium-interactive-card :is(h1, h2, h3, h4, h5, h6) {
+  color: #ffffff;
+}
+
+.premium-interactive-card:hover :is(h1, h2, h3, h4, h5, h6) {
+  color: #0b1f4d;
+}
+
 /* Kept for subtle overlays only */
 .hydro-gradient {
   background: linear-gradient(135deg, #f8fbff 0%, #e8effb 100%);
@@ -230,7 +238,9 @@ a.hydro-link:focus {
 }
 
 .partner-carousel-viewport {
-  --partner-gap: 1.25rem;
+  --partner-card-width: 9.5rem;
+  --partner-card-height: 5.5rem;
+  --partner-gap: 1.5rem;
   --partner-duration: 72s;
   position: relative;
   width: 100%;
@@ -269,9 +279,10 @@ a.hydro-link:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 8.5rem;
-  height: 5rem;
-  padding: 0.75rem 1rem;
+  width: var(--partner-card-width);
+  flex: 0 0 var(--partner-card-width);
+  height: var(--partner-card-height);
+  padding: 0.875rem 1.125rem;
   border-radius: 0.875rem;
   border: 1px solid rgba(15, 61, 145, 0.08);
   background: #ffffff;
@@ -305,25 +316,22 @@ a.hydro-link:focus {
 
 @media (min-width: 640px) {
   .partner-carousel-viewport {
-    --partner-gap: 1.5rem;
-  }
-
-  .partner-logo-card {
-    width: 9.5rem;
-    height: 5.5rem;
+    --partner-card-width: 11.5rem;
+    --partner-card-height: 6.5rem;
+    --partner-gap: 1.75rem;
   }
 }
 
 @media (min-width: 1024px) {
   .partner-carousel-viewport {
-    --partner-gap: 1.75rem;
+    --partner-card-width: 13.75rem;
+    --partner-card-height: 7.875rem;
+    --partner-gap: 2rem;
     --partner-duration: 84s;
   }
 
   .partner-logo-card {
-    width: 10.5rem;
-    height: 6rem;
-    padding: 0.875rem 1.125rem;
+    padding: 1rem 1.25rem;
   }
 }
 
