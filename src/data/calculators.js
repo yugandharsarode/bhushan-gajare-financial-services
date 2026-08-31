@@ -27,19 +27,19 @@ export const calculatorCategories = [
     id: 'value-money-sips',
     title: 'Value of Money & SIPs',
     icon: HiOutlineBanknotes,
-    calculators: ['sip', 'goal-based-sip', 'step-up-sip', 'SWP Calculator'],
+    calculators: ['sip', 'goal-based-sip', 'step-up-sip', 'swp'],
   },
   {
     id: 'plan-goals',
     title: 'Plan for Goals',
     icon: HiOutlineFlag,
-    calculators: ['Goal Planning Calculator', 'Child Education Planner'],
+    calculators: ['goal-planning', 'child-education'],
   },
   {
     id: 'plan-retirement',
     title: 'Plan for Retirement',
     icon: HiOutlineSun,
-    calculators: ['Retirement Planning Calculator'],
+    calculators: ['retirement'],
   },
   {
     id: 'insurance-schemes',

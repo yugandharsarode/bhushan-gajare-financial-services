@@ -3,11 +3,13 @@ import {
   HiOutlineBanknotes,
   HiOutlineFlag,
   HiOutlineArrowTrendingUp,
+  HiOutlineArrowDownCircle,
+  HiOutlineAcademicCap,
+  HiOutlineSun,
 } from 'react-icons/hi2'
 
 /**
  * Central registry for calculator routes and metadata.
- * Add new calculators here to plug into routing and the Calculators page.
  */
 export const calculatorRegistry = {
   sip: {
@@ -28,7 +30,7 @@ export const calculatorRegistry = {
     path: '/calculators/goal-based-sip',
     categoryId: 'value-money-sips',
     icon: HiOutlineFlag,
-    tagline: 'Goal Planning Calculator',
+    tagline: 'Target SIP Calculator',
     description:
       'Find the monthly SIP amount needed to reach your financial goal, accounting for an optional initial lump sum.',
     available: true,
@@ -45,6 +47,54 @@ export const calculatorRegistry = {
       'Project wealth growth when you increase your SIP annually, with optional lump sum investment.',
     available: true,
     component: lazy(() => import('../pages/calculators/StepUpSipCalculator')),
+  },
+  swp: {
+    id: 'swp',
+    name: 'SWP Calculator',
+    path: '/calculators/swp',
+    categoryId: 'value-money-sips',
+    icon: HiOutlineArrowDownCircle,
+    tagline: 'Withdrawal Planning Calculator',
+    description:
+      'Build a retirement corpus with SIP, then plan systematic withdrawals with annual step-up.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/SwpCalculator')),
+  },
+  'goal-planning': {
+    id: 'goal-planning',
+    name: 'Goal Planning Calculator',
+    path: '/calculators/goal-planning',
+    categoryId: 'plan-goals',
+    icon: HiOutlineFlag,
+    tagline: 'Inflation-Adjusted Goal Planner',
+    description:
+      'Plan for financial goals by accounting for inflation and calculating required SIP amounts.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/GoalPlanningCalculator')),
+  },
+  'child-education': {
+    id: 'child-education',
+    name: 'Child Education Planner',
+    path: '/calculators/child-education',
+    categoryId: 'plan-goals',
+    icon: HiOutlineAcademicCap,
+    tagline: 'Education Goal Planner',
+    description:
+      'Plan for your child\'s graduation and post-graduation expenses with inflation-adjusted projections.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/ChildEducationPlanner')),
+  },
+  retirement: {
+    id: 'retirement',
+    name: 'Retirement Planning Calculator',
+    path: '/calculators/retirement',
+    categoryId: 'plan-retirement',
+    icon: HiOutlineSun,
+    tagline: 'Retirement Corpus Planner',
+    description:
+      'Calculate the retirement corpus you need and the monthly SIP required to achieve it.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/RetirementPlanningCalculator')),
   },
 }
 

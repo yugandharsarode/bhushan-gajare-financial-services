@@ -1,145 +1,312 @@
-GROUP - Value of Money & SIPs
+Format:
 
 Calculator Name: SIP Calculator
 
 Example 1:
 Inputs:
-Monthly SIP Amount = 10000
-Lumpsum Investment (Rs.) (optional) = 0
-Expected Annual Return (%) = 12%
-Investment Period (Years) = 10
+
 
 Output:
-Total Amount Invested: Rs. 12,00,000
-Future Value of SIPs: Rs. 22,40,359
-Future Value of Lumpsum: Rs. 0
 
-Total Corpus Value: Rs. 22,40,359
-Estimated Profit: Rs. 10,40,359 
 
 Example 2:
 Inputs:
-Monthly SIP Amount = 1239
-Lumpsum Investment (Rs.) (optional) = 0
-Expected Annual Return (%) = 11%
-Investment Period (Years) = 8
+
 
 Output:
-Total Amount Invested: Rs. 1,18,944
-Future Value of SIPs: Rs. 1,86,665
-Future Value of Lumpsum: Rs. 0
-
-Total Corpus Value: Rs. 1,86,665
-Estimated Profit: Rs. 67,721 
 
 Example 3:
 Inputs:
-Monthly SIP Amount = 87832
-Lumpsum Investment (Rs.) (optional) = 0
-Expected Annual Return (%) = 14%
-Investment Period (Years) = 9
 
-Outputs:
- Total Amount Invested: Rs. 94,85,856
-Future Value of SIPs: Rs. 1,82,13,624
-Future Value of Lumpsum: Rs. 0
 
-Total Corpus Value: Rs. 1,82,13,624
-Estimated Profit: Rs. 87,27,768 
+Output:
 
---------------------------------------------------------------------------------------------------------------------------------
-Calculator Name: Goal Based SIP Calculator
+
+=============================================
+GROUP - Value of Money & SIPs
+
+Calculator Name: SWP Calculator
 
 Example 1:
 Inputs:
-Target Goal Amount (Rs.) = 50,00,000
-Initial Lumpsum Investment (Rs.) (optional) = 0
-Investment Period (Years) = 10
-Expected Annual Return (%) = 12
+Lumpsum Investment - 1,00,000
+Monthly SIP - 1500
+Investment Duration -10
+Expected Return - 11
 
 Output:
-Required Monthly SIP: Rs. 22,317.85
-Future Value of Lumpsum: Rs. 0
-Projected Future Value from SIPs: Rs. 50,00,000
-Total Corpus Achieved (Goal): Rs. 50,00,000
+Corpus for SWP - 6,02,587
+Systematic Withdrawal Plan Calculator:
+Monthly Withdrawal - 50000
+Annual Step-up - 6
+SWP Return - 8
 
 Example 2:
 Inputs:
-Target Goal Amount (Rs.) = 4,00,000
-Initial Lumpsum Investment (Rs.) (optional) = 25,000
-Investment Period (Years) = 11
-Expected Annual Return (%) = 13
+Lumpsum Investment - 56,000
+Monthly SIP - 2,653
+Investment Duration -8
+Expected Return - 9.3
 
 Output:
- Required Monthly SIP: Rs. 1,086.62
-Future Value of Lumpsum: Rs. 95,897
-Projected Future Value from SIPs: Rs. 3,04,103
-Total Corpus Achieved (Goal): Rs. 4,00,000
+Corpus for SWP - 4,86,642
+Systematic Withdrawal Plan Calculator
+Monthly Withdrawal - 20,000
+Annual Step-up - 7
+SWP Return - 8
 
+
+
+Corpus lasts: 26 months
+
+Corpus at end: ₹0
+Month 	Start Balance 	Withdrawal 	Returns 	End Balance
+1 	₹4,86,642 	₹20,000 	₹3,002 	₹4,69,644
+2 	₹4,69,644 	₹20,000 	₹2,893 	₹4,52,537
+3 	₹4,52,537 	₹20,000 	₹2,783 	₹4,35,320
+4 	₹4,35,320 	₹20,000 	₹2,672 	₹4,17,993
+5 	₹4,17,993 	₹20,000 	₹2,561 	₹4,00,553
+6 	₹4,00,553 	₹20,000 	₹2,448 	₹3,83,002
 
 Example 3:
 Inputs:
-Target Goal Amount (Rs.) = 12,00,000
-Initial Lumpsum Investment (Rs.) (optional) = 26,589 
-Investment Period (Years) = 10
-Expected Annual Return (%) = 13
+Lumpsum Investment - 97,579
+Monthly SIP - 677
+Investment Duration -9
+Expected Return - 7.93
 
 Output:
-Required Monthly SIP: Rs. 4,696.10
-Future Value of Lumpsum: Rs. 90,258
-Projected Future Value from SIPs: Rs. 11,09,742
-Total Corpus Achieved (Goal): Rs. 12,00,000
+Corpus for SWP - 2,99,373
+Systematic Withdrawal Plan Calculator
+Monthly Withdrawal - 2,982
+Annual Step-up - 4
+SWP Return - 7
+
+orpus lasts: 117 months
+
+Corpus at end: ₹0
+Month 	Start Balance 	Withdrawal 	Returns 	End Balance
+1 	₹2,99,373 	₹2,982 	₹1,676 	₹2,98,067
+2 	₹2,98,067 	₹2,982 	₹1,668 	₹2,96,753
+3 	₹2,96,753 	₹2,982 	₹1,661 	₹2,95,432
+4 	₹2,95,432 	₹2,982 	₹1,654 	₹2,94,104
+5 	₹2,94,104 	₹2,982 	₹1,646 	₹2,92,768
+6 	₹2,92,768 	₹2,982 	₹1,638 	₹2,91,424
+7 	₹2,91,424 	₹2,982 	₹1,631 	₹2,90,073
+
 
 --------------------------------------------------------------------------------------------------------------------------------
-Calculator Name: Step-Up SIP Calculator
+Group - Plan for Goals
+
+Calculator Name: SIP Calculator
 
 Example 1:
 Inputs:
-Initial Monthly SIP Amount (Rs.) = 10,000
-Lumpsum Investment (Rs.) = 50,000
-Investment Period (Years) = 10
-Annual Step-Up Percentage (%) = 10
-Expected Annual Return (%) = 12
+Assumed Annual Return %- 12	
+Annual Step-Up % - 10
+Lumpsum Today (Rs.) -10000 
+
+Your Financial Goals:
+Description of Goal - test
+Present value - 2,222
+years from now - 4
+Inflation% - 3.4
+
 
 Output:
-Total Amount Invested: Rs. 19,62,491
-Future Value of Lumpsum (estimated): Rs. 1,55,292
-Future Value of SIPs (estimated): Rs. 32,68,898
+test
 
-Total Corpus Value: Rs. 34,24,191
-Estimated Profit: Rs. 14,61,700
+Present Value: Rs. 2,222
+
+Years to Goal: 4.0 years
+
+Inflation Applied: 3.4%
+
+Inflation-Adjusted Future Value: Rs. 2,540
+
+Lumpsum Contribution (FV): Rs. 15,735
+
+Corpus from SIP: Rs. 0
+
+Fixed SIP Required: Rs. 0/mo
+
+Initial Step-Up SIP: Rs. 0/mo (with 10% annual step-up)
 
 Example 2:
 Inputs:
-Initial Monthly SIP Amount (Rs.) = 5,000
-Lumpsum Investment (Rs.) = 1,00,000
-Investment Period (Years) = 8
-Annual Step-Up Percentage (%) = 9.5 
-Expected Annual Return (%) = 11
+Assumed Annual Return %- 8.4
+Annual Step-Up % - 5
+Lumpsum Today (Rs.) - 55000 
+
+Your Financial Goals:
+Description of Goal - Test 2
+Present value - 1,500
+years from now - 8 
+Inflation% - 4.6
 
 Output:
-Total Amount Invested: Rs. 7,73,812
-Future Value of Lumpsum (estimated): Rs. 2,30,454
-Future Value of SIPs (estimated): Rs. 10,06,416
+Test 2
 
-Total Corpus Value: Rs. 12,36,870
-Estimated Profit: Rs. 4,63,058
+Present Value: Rs. 1,500
+
+Years to Goal: 8.0 years
+
+Inflation Applied: 4.6%
+
+Inflation-Adjusted Future Value: Rs. 2,150
+
+Lumpsum Contribution (FV): Rs. 1,04,857
+
+Corpus from SIP: Rs. 0
+
+Fixed SIP Required: Rs. 0/mo
+
+Initial Step-Up SIP: Rs. 0/mo (with 5% annual step-up)
 
 Example 3:
 Inputs:
-Initial Monthly SIP Amount (Rs.) = 12,767
-Lumpsum Investment (Rs.) = 40,000
-Investment Period (Years) = 7
-Annual Step-Up Percentage (%) = 3.5
-Expected Annual Return (%) = 9
+Assumed Annual Return %- 11.4
+Annual Step-Up % - 15
+Lumpsum Today (Rs.) - 1,22,000 
+
+Your Financial Goals:
+Description of Goal - Test 3
+Present value -20,000
+years from now - 7
+Inflation% - 3.2
 
 Output:
-Total Amount Invested: Rs. 12,31,836
-Future Value of Lumpsum (estimated): Rs. 73,122
-Future Value of SIPs (estimated): Rs. 16,22,560
+Test 3
 
-Total Corpus Value: Rs. 16,95,681
-Estimated Profit: Rs. 4,63,845
+Present Value: Rs. 20,000
+
+Years to Goal: 7.0 years
+
+Inflation Applied: 3.2%
+
+Inflation-Adjusted Future Value: Rs. 24,934
+
+Lumpsum Contribution (FV): Rs. 2,59,750
+
+Corpus from SIP: Rs. 0
+
+Fixed SIP Required: Rs. 0/mo
+
+Initial Step-Up SIP: Rs. 0/mo (with 15% annual step-up)
 
 --------------------------------------------------------------------------------------------------------------------------------
+Calculator Name: Child Education Planner
 
+Example 1:
+Inputs:
+Assumed Annual Return (%) - 12
+Preferred Annual SIP Step-Up (%) - 10
+Preferred Annual SIP Step-Up (%) - 35000
+
+Add Child button for adding more childs 
+Child's Name - Test 1
+Child's Current Age (Years) - 5
+
+Graduation Plan for Test 1
+Child's Age at Graduation - 21
+Graduation Present Cost (Rs.) - 10,00,000
+Inflation % Applicable for Graduation - 4.5
+
+Post Graduation Plan for Test 1
+Child's Age at Post Graduation - 24
+Post Graduation Present Cost (Rs.) - 20,00,000
+Inflation % Applicable for Post Graduation - 5.5
+
+Output:
+Graduation (Test 1)
+
+Original Present Value: Rs. 10,00,000
+
+Inflation Applied: 4.5%
+
+Years to Goal: 16.0 years
+
+Future Value (Target Corpus): Rs. 20,22,370
+
+Lumpsum Contribution (FV): Rs. 2,14,564
+
+Corpus to be Achieved via SIP: Rs. 18,07,806
+
+Fixed SIP Required: Rs. 3,312/month
+
+Initial Step-Up SIP Required: Rs. 1,848/month (with 10% annual step-up)
+
+Post Graduation (Test 1)
+
+Original Present Value: Rs. 20,00,000
+
+Inflation Applied: 5.5%
+
+Years to Goal: 19.0 years
+
+Future Value (Target Corpus): Rs. 55,31,294
+
+Corpus to be Achieved via SIP: Rs. 55,31,294
+
+Fixed SIP Required: Rs. 6,830/month
+
+Initial Step-Up SIP Required: Rs. 3,482/month (with 10% annual step-up)
+
+
+------------------------------------------------------------------------------------------------------
+GROUP - Plan for Retirement
+
+Example 1:
+Inputs:
+Current Annual Expenses (₹) - 12,00,000
+Expected Inflation Rate (Pre-Ret.) (%) - 6
+Current Age - 35
+Retirement Age -55 
+Life Expectancy - 100
+Expected Return Rate (Pre-Ret.) (%) - 12
+Step-up SIP Increase Rate (% per year) -10 
+Lumpsum Already Saved (₹) - 10000
+Post Retirement Return Rate (%) - 7
+Post Retirement Inflation Rate (%) - 5
+
+Output:
+Annual Expenses at Retirement (Year 1): ₹38,48,563
+
+Total Retirement Corpus Needed: ₹11,78,13,333
+
+Future Value of Current Savings: ₹96,463
+
+Additional Corpus Needed: ₹11,77,16,870
+
+Monthly SIP Required (Fixed): ₹1,27,973
+
+Step-up SIP Starting Amount: ₹63,182
+(Increasing by 10% annually)
+
+
+Example 2:
+Inputs:
+Current Annual Expenses (₹) - 3,40,000
+Expected Inflation Rate (Pre-Ret.) (%) - 6
+Current Age - 28
+Retirement Age - 48 
+Life Expectancy - 80
+Expected Return Rate (Pre-Ret.) (%) - 12.8
+Step-up SIP Increase Rate (% per year) - 5
+Lumpsum Already Saved (₹) - 5,000
+Post Retirement Return Rate (%) - 6
+Post Retirement Inflation Rate (%) - 7 
+
+Output:
+Annual Expenses at Retirement (Year 1): ₹10,90,426
+
+Total Retirement Corpus Needed: ₹4,05,12,099
+
+Future Value of Current Savings: ₹55,610
+
+Additional Corpus Needed: ₹4,04,56,490
+
+Monthly SIP Required (Fixed): ₹39,917
+
+Step-up SIP Starting Amount: ₹29,076
+(Increasing by 5% annually)
