@@ -19,9 +19,11 @@ export function formatIndianCurrencyParts(value, options = {}) {
   const amount = new Intl.NumberFormat('en-IN', {
     maximumFractionDigits: maxFrac,
     minimumFractionDigits: minFrac,
-  }).format(num)
+  }).format(Math.abs(num))
 
-  return { symbol: '₹', amount }
+  // Sign goes before the symbol: -₹6,71,499 (values that round to zero show no sign)
+  const negative = num < 0 && Number(amount.replace(/,/g, '')) !== 0
+  return { symbol: negative ? '-₹' : '₹', amount }
 }
 
 export function formatIndianCurrency(value, options = {}) {

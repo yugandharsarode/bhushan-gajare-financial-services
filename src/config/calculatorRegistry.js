@@ -6,6 +6,11 @@ import {
   HiOutlineArrowDownCircle,
   HiOutlineAcademicCap,
   HiOutlineSun,
+  HiOutlineShieldCheck,
+  HiOutlineReceiptPercent,
+  HiOutlineScale,
+  HiOutlineHomeModern,
+  HiOutlineClipboardDocumentCheck,
 } from 'react-icons/hi2'
 
 /**
@@ -95,6 +100,66 @@ export const calculatorRegistry = {
       'Calculate the retirement corpus you need and the monthly SIP required to achieve it.',
     available: true,
     component: lazy(() => import('../pages/calculators/RetirementPlanningCalculator')),
+  },
+  'term-insurance': {
+    id: 'term-insurance',
+    name: 'Term Insurance Coverage Need',
+    path: '/calculators/term-insurance',
+    categoryId: 'insurance-schemes',
+    icon: HiOutlineShieldCheck,
+    tagline: 'Life Cover Calculator',
+    description:
+      'Estimate how much term insurance your family needs using the Human Life Value or Need-Based method.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/TermInsuranceCalculator')),
+  },
+  'loan-emi': {
+    id: 'loan-emi',
+    name: 'Loan EMI Calculator',
+    path: '/calculators/loan-emi',
+    categoryId: 'loan-buy-rent',
+    icon: HiOutlineReceiptPercent,
+    tagline: 'EMI & Amortization Calculator',
+    description:
+      'Calculate your monthly EMI, total interest and the month-by-month repayment schedule for any loan.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/LoanEmiCalculator')),
+  },
+  'cash-vs-loan': {
+    id: 'cash-vs-loan',
+    name: 'Cash vs Loan',
+    path: '/calculators/cash-vs-loan',
+    categoryId: 'loan-buy-rent',
+    icon: HiOutlineScale,
+    tagline: 'Buy vs Borrow & Invest Calculator',
+    description:
+      'Compare paying cash for a purchase with taking a loan and investing the cash you keep.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/CashVsLoanCalculator')),
+  },
+  'rent-vs-buy': {
+    id: 'rent-vs-buy',
+    name: 'Rent vs Buy',
+    path: '/calculators/rent-vs-buy',
+    categoryId: 'loan-buy-rent',
+    icon: HiOutlineHomeModern,
+    tagline: 'Home Buying Decision Calculator',
+    description:
+      'Compare buying a home, outright or with a loan, against renting and investing the difference.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/RentVsBuyCalculator')),
+  },
+  'risk-profile': {
+    id: 'risk-profile',
+    name: 'Risk Profile Assessment',
+    path: '/calculators/risk-profile',
+    categoryId: 'understand-investor',
+    icon: HiOutlineClipboardDocumentCheck,
+    tagline: 'Investor Risk Questionnaire',
+    description:
+      'Answer 11 questions to find your investment risk profile and a suggested asset allocation.',
+    available: true,
+    component: lazy(() => import('../pages/calculators/RiskProfileAssessment')),
   },
 }
 

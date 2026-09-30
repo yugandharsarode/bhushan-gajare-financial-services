@@ -45,19 +45,19 @@ export const calculatorCategories = [
     id: 'insurance-schemes',
     title: 'Insurance & Schemes',
     icon: HiOutlineShieldCheck,
-    calculators: ['Term Insurance Coverage Need'],
+    calculators: ['term-insurance'],
   },
   {
     id: 'loan-buy-rent',
     title: 'Loan & Buy vs Rent',
     icon: HiOutlineHomeModern,
-    calculators: ['Loan EMI Calculator', 'Cash vs Loan', 'Rent vs Buy'],
+    calculators: ['loan-emi', 'cash-vs-loan', 'rent-vs-buy'],
   },
   {
     id: 'understand-investor',
     title: 'Understand the Investor',
     icon: HiOutlineUserCircle,
-    calculators: ['Risk Profile Assessment'],
+    calculators: ['risk-profile'],
   },
 ]
 

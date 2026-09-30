@@ -1,10 +1,14 @@
 import CurrencyAmount from './CurrencyAmount'
 
+/** Tables longer than this scroll inside their card, with the header pinned */
+const SCROLL_AFTER_ROWS = 15
+
 /**
  * Reusable yearly projection table for calculators.
  */
 function ProjectionTable({ title = 'Yearly Projection', subtitle, rows, columns }) {
   if (!rows?.length) return null
+  const scrollable = rows.length > SCROLL_AFTER_ROWS
 
   return (
     <div
@@ -13,16 +17,25 @@ function ProjectionTable({ title = 'Yearly Projection', subtitle, rows, columns 
     >
       <div className="border-b border-slate-100 bg-slate-50/80 px-6 py-4 sm:px-8">
         <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        {subtitle && <p className="text-sm text-slate-600">{subtitle}</p>}
+        {subtitle && (
+          <p className="text-sm text-slate-600">
+            {subtitle}
+            {scrollable && <span className="text-slate-400"> · {rows.length} rows, scroll to see all</span>}
+          </p>
+        )}
       </div>
-      <div className="-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0">
+      <div
+        className={`-mx-1 overflow-x-auto px-1 pb-1 sm:mx-0 ${scrollable ? 'max-h-[30rem] overflow-y-auto overscroll-contain' : ''}`}
+        tabIndex={scrollable ? 0 : undefined}
+        aria-label={scrollable ? `${title} table` : undefined}
+      >
         <table className="w-full min-w-[36rem] text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-100 bg-brand-900/5">
+            <tr className="border-b border-slate-100">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="whitespace-nowrap px-3 py-3 font-semibold text-slate-700 sm:px-5"
+                  className="sticky top-0 z-10 whitespace-nowrap bg-[#eef2f8] px-3 py-3 font-semibold text-slate-700 sm:px-5"
                 >
                   {col.label}
                 </th>
@@ -55,6 +68,7 @@ function ProjectionTable({ title = 'Yearly Projection', subtitle, rows, columns 
                           size="sm"
                           decimals={col.decimals ?? 0}
                           amountClassName={isHighlight ? 'text-emerald-700' : ''}
+                          inline
                         />
                       ) : (
                         <span className="font-medium text-slate-700">{cellValue}</span>

@@ -1,12 +1,17 @@
 /**
- * Financial calculator formulas — validated against calc.txt examples.
+ * Investment and planning calculator formulas.
+ * Verified against the reference calculators by scripts/validate-calculations.mjs.
  *
  * Core conventions:
- * - SIP accumulation: effective monthly rate (1+r)^(1/12)-1, annuity-due (month-start)
+ * - Monthly rate: effective (1+r)^(1/12) - 1, not r/12
+ * - SIP contributions: start of each month (annuity-due)
  * - Lump sum: annual compounding
- * - Step-up SIP: month-start investment, step-up applied after each year
- * - SWP withdrawal: returns on (balance − withdrawal), step-up after every 12 months
- * - Retirement corpus: PV of post-retirement expenses growing with inflation
+ * - Step-up SIP: constant within a year, raised by the step-up % every 12 instalments
+ * - Investment periods, ages and goal horizons are whole years
+ * - SWP: withdrawal at the start of the month, returns on the remaining balance,
+ *   withdrawal raised by the step-up % every 12 withdrawals
+ * - Retirement corpus: value at retirement of expenses paid at the start of
+ *   each retirement year (no withdrawal in the life-expectancy year)
  */
 
 /** Effective monthly interest rate from annual percentage */
@@ -14,12 +19,19 @@ export function getMonthlyRate(annualReturnPercent) {
   return Math.pow(1 + annualReturnPercent / 100, 1 / 12) - 1
 }
 
+/** Periods are whole years; any fraction is dropped */
+export function toWholeYears(years) {
+  const value = Math.trunc(Number(years))
+  return Number.isFinite(value) && value > 0 ? value : 0
+}
+
+/** Round a monthly SIP amount to paise */
+export function roundToPaise(amount) {
+  return Math.round(amount * 100) / 100
+}
+
 /** Inflation-adjusted future value of a present amount */
-export function calculateInflationAdjustedValue(
-  presentValue,
-  inflationPercent,
-  years
-) {
+export function calculateInflationAdjustedValue(presentValue, inflationPercent, years) {
   return presentValue * Math.pow(1 + inflationPercent / 100, years)
 }
 
@@ -40,6 +52,17 @@ export function calculateLumpSumFutureValue(lumpSum, annualReturnPercent, years)
   return lumpSum * Math.pow(1 + annualReturnPercent / 100, years)
 }
 
+/** Monthly SIP (annuity due) that grows to `corpus` over whole `years` */
+export function calculateRequiredSipForCorpus(corpus, annualReturnPercent, years) {
+  const months = toWholeYears(years) * 12
+  if (corpus <= 0 || months <= 0) return 0
+
+  const i = getMonthlyRate(annualReturnPercent)
+  const annuityDueFactor =
+    i === 0 ? months : ((Math.pow(1 + i, months) - 1) / i) * (1 + i)
+  return corpus / annuityDueFactor
+}
+
 /** Simulate step-up SIP with month-start contributions */
 export function simulateStepUpSip({
   initialMonthlyAmount,
@@ -49,11 +72,12 @@ export function simulateStepUpSip({
   lumpSum = 0,
 }) {
   const monthlyRate = getMonthlyRate(annualReturnPercent)
+  const wholeYears = toWholeYears(years)
   let balance = lumpSum
   let totalInvested = lumpSum
   let monthlySip = initialMonthlyAmount
 
-  for (let year = 0; year < years; year++) {
+  for (let year = 0; year < wholeYears; year++) {
     for (let month = 0; month < 12; month++) {
       balance = (balance + monthlySip) * (1 + monthlyRate)
       totalInvested += monthlySip
@@ -64,7 +88,11 @@ export function simulateStepUpSip({
   return { balance, totalInvested }
 }
 
-/** Solve initial step-up SIP via binary search */
+/**
+ * Exact initial step-up SIP that reaches the target (bisection to convergence).
+ * The planners use the reference search below instead; this is kept to measure
+ * how far that search lands from the exact answer.
+ */
 export function solveInitialStepUpSip({
   targetAmount,
   annualReturnPercent,
@@ -97,29 +125,123 @@ export function solveInitialStepUpSip({
   return (low + high) / 2
 }
 
-/** Solve required fixed monthly SIP for a target */
+/**
+ * Search settings for the initial step-up SIP, taken from the reference planners.
+ * Each planner bisects its own range and stops at a tolerance instead of the
+ * exact root, which is why its answer sits slightly away from the exact value.
+ *
+ * - goalReached: stop at the first trial amount that reaches the corpus and
+ *   overshoots it by less than the tolerance; round up to the paisa. The answer
+ *   is never below the exact requirement and at most about 0.1% above it.
+ *   (The reference Goal Planning and Child Education pages instead report the
+ *   last upper bound of the search, which is usually 0.1-1.5% high but can be
+ *   several times too high when the search stops early. That part is not copied.)
+ * - mid: stop at the first trial amount within the tolerance, on either side, as
+ *   the reference Retirement page does; round to the paisa.
+ */
+export const STEP_UP_SEARCH = {
+  goalPlanning: {
+    upperBound: (corpus, years) => (2 * corpus) / years,
+    tolerance: (corpus) => Math.max(corpus * 0.001, 1),
+    onConverge: 'goalReached',
+  },
+  childEducation: {
+    upperBound: (corpus) => corpus,
+    tolerance: (corpus) => Math.max(corpus * 0.001, 1),
+    onConverge: 'goalReached',
+  },
+  retirement: {
+    upperBound: (corpus, years) => (1.5 * corpus) / years,
+    tolerance: (corpus) => Math.max(0.1, corpus * 0.0001),
+    onConverge: 'mid',
+    minWidth: 0.01,
+  },
+}
+
+/** Initial step-up SIP for a corpus, using a planner's search settings */
+export function searchInitialStepUpSip({
+  corpus,
+  annualReturnPercent,
+  years,
+  annualStepUpPercent,
+  search,
+}) {
+  const wholeYears = toWholeYears(years)
+  if (corpus <= 0 || wholeYears <= 0) return 0
+
+  const sipOnlyCorpus = (initialMonthlyAmount) =>
+    simulateStepUpSip({
+      initialMonthlyAmount,
+      annualReturnPercent,
+      years: wholeYears,
+      annualStepUpPercent,
+    }).balance
+
+  let low = 0
+  let high = search.upperBound(corpus, wholeYears)
+  const tolerance = search.tolerance(corpus)
+
+  for (let iteration = 0; iteration < 100; iteration++) {
+    if (search.minWidth !== undefined && high - low <= search.minWidth) break
+    const mid = (low + high) / 2
+    const gap = sipOnlyCorpus(mid) - corpus
+    const converged =
+      search.onConverge === 'mid'
+        ? Math.abs(gap) < tolerance
+        : gap >= 0 && gap < tolerance
+    if (converged) {
+      high = mid
+      break
+    }
+    if (gap < 0) low = mid
+    else high = mid
+  }
+
+  return search.onConverge === 'goalReached'
+    ? Math.ceil(high * 100) / 100
+    : roundToPaise(high)
+}
+
+/**
+ * Initial step-up SIP for a planner goal. When the step-up can never apply
+ * (0% step-up or a one-year horizon) it is the fixed SIP.
+ */
+export function resolveInitialStepUpSip({
+  corpus,
+  annualReturnPercent,
+  years,
+  annualStepUpPercent,
+  fixedSip,
+  search,
+}) {
+  if (corpus <= 0) return 0
+  if (annualStepUpPercent <= 0 || toWholeYears(years) <= 1) return fixedSip
+  return searchInitialStepUpSip({
+    corpus,
+    annualReturnPercent,
+    years,
+    annualStepUpPercent,
+    search,
+  })
+}
+
+/** Solve required fixed monthly SIP for a target, net of a lump sum */
 export function solveRequiredFixedSip({
   targetAmount,
   annualReturnPercent,
   years,
   lumpSum = 0,
 }) {
-  const months = years * 12
   const lumpSumFutureValue = calculateLumpSumFutureValue(
     lumpSum,
     annualReturnPercent,
+    toWholeYears(years)
+  )
+  return calculateRequiredSipForCorpus(
+    targetAmount - lumpSumFutureValue,
+    annualReturnPercent,
     years
   )
-  const remainingTarget = targetAmount - lumpSumFutureValue
-
-  if (remainingTarget <= 0) return 0
-
-  const i = getMonthlyRate(annualReturnPercent)
-  const growthFactor = Math.pow(1 + i, months)
-  const annuityDueFactor =
-    i === 0 ? months : ((growthFactor - 1) / i) * (1 + i)
-
-  return remainingTarget / annuityDueFactor
 }
 
 // ---------------------------------------------------------------------------
@@ -132,7 +254,8 @@ export function calculateSipResults({
   years,
   lumpSum = 0,
 }) {
-  const months = years * 12
+  const wholeYears = toWholeYears(years)
+  const months = wholeYears * 12
   const sipFutureValue = calculateSipFutureValue(
     monthlyAmount,
     annualReturnPercent,
@@ -141,20 +264,17 @@ export function calculateSipResults({
   const lumpSumFutureValue = calculateLumpSumFutureValue(
     lumpSum,
     annualReturnPercent,
-    years
+    wholeYears
   )
   const totalCorpus = sipFutureValue + lumpSumFutureValue
   const totalInvested = monthlyAmount * months + lumpSum
-  const estimatedProfit = totalCorpus - totalInvested
 
   return {
     totalInvested,
     sipFutureValue,
     lumpSumFutureValue,
     totalCorpus,
-    estimatedProfit,
-    wealthGain: estimatedProfit,
-    finalCorpus: totalCorpus,
+    estimatedProfit: totalCorpus - totalInvested,
   }
 }
 
@@ -168,18 +288,21 @@ export function calculateGoalBasedSipResults({
   years,
   lumpSum = 0,
 }) {
-  const requiredMonthlySip = solveRequiredFixedSip({
-    targetAmount,
-    annualReturnPercent,
-    years,
-    lumpSum,
-  })
-  const months = years * 12
+  const wholeYears = toWholeYears(years)
+  const months = wholeYears * 12
   const lumpSumFutureValue = calculateLumpSumFutureValue(
     lumpSum,
     annualReturnPercent,
-    years
+    wholeYears
   )
+  const lumpSumCoversGoal = lumpSumFutureValue >= targetAmount
+  const requiredMonthlySip = lumpSumCoversGoal
+    ? 0
+    : calculateRequiredSipForCorpus(
+        targetAmount - lumpSumFutureValue,
+        annualReturnPercent,
+        wholeYears
+      )
   const sipFutureValue = calculateSipFutureValue(
     requiredMonthlySip,
     annualReturnPercent,
@@ -191,12 +314,11 @@ export function calculateGoalBasedSipResults({
   return {
     requiredMonthlySip,
     lumpSumFutureValue,
+    lumpSumCoversGoal,
     sipFutureValue,
     totalCorpus,
     totalInvested,
-    estimatedProfit: totalCorpus - totalInvested,
     wealthGain: totalCorpus - totalInvested,
-    finalCorpus: totalCorpus,
   }
 }
 
@@ -211,10 +333,11 @@ export function calculateStepUpSipResults({
   annualStepUpPercent,
   lumpSum = 0,
 }) {
+  const wholeYears = toWholeYears(years)
   const { balance, totalInvested } = simulateStepUpSip({
     initialMonthlyAmount,
     annualReturnPercent,
-    years,
+    years: wholeYears,
     annualStepUpPercent,
     lumpSum,
   })
@@ -222,25 +345,24 @@ export function calculateStepUpSipResults({
   const lumpSumFutureValue = calculateLumpSumFutureValue(
     lumpSum,
     annualReturnPercent,
-    years
+    wholeYears
   )
-  const sipFutureValue = balance - lumpSumFutureValue
-  const estimatedProfit = balance - totalInvested
 
   return {
     totalInvested,
     lumpSumFutureValue,
-    sipFutureValue,
+    sipFutureValue: balance - lumpSumFutureValue,
     totalCorpus: balance,
-    estimatedProfit,
-    wealthGain: estimatedProfit,
-    finalCorpus: balance,
+    estimatedProfit: balance - totalInvested,
   }
 }
 
 // ---------------------------------------------------------------------------
 // SWP Calculator
 // ---------------------------------------------------------------------------
+
+/** Longest withdrawal schedule simulated (50 years) */
+export const SWP_MAX_MONTHS = 600
 
 /** Build accumulation corpus before SWP withdrawals begin */
 export function calculateSwpAccumulationCorpus({
@@ -249,7 +371,8 @@ export function calculateSwpAccumulationCorpus({
   years,
   lumpSum = 0,
 }) {
-  const months = years * 12
+  const wholeYears = toWholeYears(years)
+  const months = wholeYears * 12
   const sipFutureValue = calculateSipFutureValue(
     monthlySip,
     annualReturnPercent,
@@ -258,24 +381,25 @@ export function calculateSwpAccumulationCorpus({
   const lumpSumFutureValue = calculateLumpSumFutureValue(
     lumpSum,
     annualReturnPercent,
-    years
+    wholeYears
   )
 
   return {
-    corpusForSwp: sipFutureValue + lumpSumFutureValue,
+    // The corpus is stated to the rupee and withdrawals start from that figure
+    corpusForSwp: Math.round(sipFutureValue + lumpSumFutureValue),
     sipFutureValue,
     lumpSumFutureValue,
     totalInvested: monthlySip * months + lumpSum,
   }
 }
 
-/** Simulate SWP withdrawals until corpus is depleted */
+/** Simulate SWP withdrawals until corpus is depleted or SWP_MAX_MONTHS pass */
 export function simulateSwpWithdrawal({
   corpus,
   monthlyWithdrawal,
   annualStepUpPercent,
   swpReturnPercent,
-  maxMonths = 600,
+  maxMonths = SWP_MAX_MONTHS,
 }) {
   const monthlyRate = getMonthlyRate(swpReturnPercent)
   let balance = corpus
@@ -304,9 +428,12 @@ export function simulateSwpWithdrawal({
     }
   }
 
+  const corpusAtEnd = Math.max(0, balance)
   return {
     corpusLastsMonths: schedule.length,
-    corpusAtEnd: Math.max(0, balance),
+    lastsBeyondSchedule: corpusAtEnd > 0,
+    corpusAtEnd,
+    totalWithdrawn: schedule.reduce((sum, row) => sum + row.withdrawal, 0),
     schedule,
   }
 }
@@ -337,10 +464,7 @@ export function calculateSwpResults({
   return {
     ...accumulation,
     ...withdrawal,
-    futureValue: accumulation.corpusForSwp,
     estimatedProfit: accumulation.corpusForSwp - accumulation.totalInvested,
-    wealthGain: accumulation.corpusForSwp - accumulation.totalInvested,
-    finalCorpus: accumulation.corpusForSwp,
   }
 }
 
@@ -356,57 +480,42 @@ export function calculateGoalPlanningResults({
   annualStepUpPercent,
   lumpSumToday = 0,
 }) {
+  const wholeYears = toWholeYears(years)
   const inflationAdjustedFutureValue = calculateInflationAdjustedValue(
     presentValue,
     inflationPercent,
-    years
+    wholeYears
   )
   const lumpSumContributionFv = calculateLumpSumFutureValue(
     lumpSumToday,
     annualReturnPercent,
-    years
+    wholeYears
   )
+  const corpusFromSip = Math.max(0, inflationAdjustedFutureValue - lumpSumContributionFv)
 
-  const corpusFromSip = Math.max(
-    0,
-    inflationAdjustedFutureValue - lumpSumContributionFv
+  const fixedSipRequired = roundToPaise(
+    calculateRequiredSipForCorpus(corpusFromSip, annualReturnPercent, wholeYears)
   )
-
-  const fixedSipRequired =
-    corpusFromSip > 0
-      ? solveRequiredFixedSip({
-          targetAmount: inflationAdjustedFutureValue,
-          annualReturnPercent,
-          years,
-          lumpSum: lumpSumToday,
-        })
-      : 0
-
-  const initialStepUpSipRequired =
-    corpusFromSip > 0
-      ? solveInitialStepUpSip({
-          targetAmount: inflationAdjustedFutureValue,
-          annualReturnPercent,
-          years,
-          annualStepUpPercent,
-          lumpSum: lumpSumToday,
-        })
-      : 0
+  const initialStepUpSipRequired = resolveInitialStepUpSip({
+    corpus: corpusFromSip,
+    annualReturnPercent,
+    years: wholeYears,
+    annualStepUpPercent,
+    fixedSip: fixedSipRequired,
+    search: STEP_UP_SEARCH.goalPlanning,
+  })
 
   return {
     presentValue,
-    years,
+    years: wholeYears,
     inflationPercent,
     inflationAdjustedFutureValue,
     lumpSumContributionFv,
     corpusFromSip,
+    lumpSumCoversGoal: corpusFromSip === 0,
     fixedSipRequired,
     initialStepUpSipRequired,
     totalCorpus: inflationAdjustedFutureValue,
-    futureValue: inflationAdjustedFutureValue,
-    estimatedProfit: inflationAdjustedFutureValue - lumpSumToday,
-    wealthGain: inflationAdjustedFutureValue - lumpSumToday,
-    finalCorpus: inflationAdjustedFutureValue,
   }
 }
 
@@ -414,50 +523,56 @@ export function calculateGoalPlanningResults({
 // Child Education Planner
 // ---------------------------------------------------------------------------
 
+/**
+ * Share one lump sum across goals, nearest goal first. Each goal takes only
+ * the part it needs; whatever is left moves on to the next goal. Goals with
+ * the same horizon keep their input order.
+ */
+export function allocateLumpSumToGoals(goals, lumpSumToday, annualReturnPercent) {
+  const allocations = goals.map(() => ({ lumpSumAllocated: 0, lumpSumContributionFv: 0 }))
+  let remaining = lumpSumToday > 0 ? lumpSumToday : 0
+
+  const order = goals
+    .map((goal, index) => ({ index, years: goal.yearsToGoal }))
+    .sort((a, b) => a.years - b.years || a.index - b.index)
+
+  for (const { index, years } of order) {
+    if (remaining <= 0) break
+    const growth = Math.pow(1 + annualReturnPercent / 100, years)
+    const presentValueNeeded = goals[index].futureValue / growth
+    const allocated = Math.min(remaining, presentValueNeeded)
+    allocations[index] = {
+      lumpSumAllocated: allocated,
+      lumpSumContributionFv: allocated * growth,
+    }
+    remaining -= allocated
+  }
+
+  return { allocations, unallocatedLumpSum: remaining }
+}
+
+/** One education goal: target, SIP corpus and the SIPs that reach it */
 export function calculateEducationGoal({
   presentCost,
   inflationPercent,
   yearsToGoal,
   annualReturnPercent,
   annualStepUpPercent,
-  lumpSumToday = 0,
-  applyLumpSum = true,
+  lumpSumContributionFv = 0,
 }) {
-  const futureValue = calculateInflationAdjustedValue(
-    presentCost,
-    inflationPercent,
-    yearsToGoal
-  )
-
-  const lumpSumUsed = applyLumpSum ? lumpSumToday : 0
-  const lumpSumContributionFv = calculateLumpSumFutureValue(
-    lumpSumUsed,
-    annualReturnPercent,
-    yearsToGoal
-  )
-
+  const futureValue = calculateInflationAdjustedValue(presentCost, inflationPercent, yearsToGoal)
   const corpusViaSip = Math.max(0, futureValue - lumpSumContributionFv)
-
-  const fixedSipRequired =
-    corpusViaSip > 0
-      ? solveRequiredFixedSip({
-          targetAmount: applyLumpSum ? futureValue : corpusViaSip,
-          annualReturnPercent,
-          years: yearsToGoal,
-          lumpSum: lumpSumUsed,
-        })
-      : 0
-
-  const initialStepUpSipRequired =
-    corpusViaSip > 0
-      ? solveInitialStepUpSip({
-          targetAmount: futureValue,
-          annualReturnPercent,
-          years: yearsToGoal,
-          annualStepUpPercent,
-          lumpSum: lumpSumUsed,
-        })
-      : 0
+  const fixedSipRequired = roundToPaise(
+    calculateRequiredSipForCorpus(corpusViaSip, annualReturnPercent, yearsToGoal)
+  )
+  const initialStepUpSipRequired = resolveInitialStepUpSip({
+    corpus: corpusViaSip,
+    annualReturnPercent,
+    years: yearsToGoal,
+    annualStepUpPercent,
+    fixedSip: fixedSipRequired,
+    search: STEP_UP_SEARCH.childEducation,
+  })
 
   return {
     presentCost,
@@ -468,52 +583,82 @@ export function calculateEducationGoal({
     corpusViaSip,
     fixedSipRequired,
     initialStepUpSipRequired,
-    futureValueTarget: futureValue,
-    estimatedProfit: futureValue - lumpSumUsed,
-    wealthGain: futureValue - lumpSumUsed,
-    finalCorpus: futureValue,
   }
 }
 
+/**
+ * children: [{ name, currentAge, graduation: { targetAge, presentCost, inflationPercent },
+ *              postGraduation: same shape or null }]
+ */
 export function calculateChildEducationResults({
   annualReturnPercent,
   annualStepUpPercent,
-  lumpSumToday,
+  lumpSumToday = 0,
   children,
 }) {
-  const childResults = children.map((child) => {
-    const yearsToGraduation = child.graduationAge - child.currentAge
-    const yearsToPostGraduation = child.postGraduationAge - child.currentAge
-
-    const graduation = calculateEducationGoal({
-      presentCost: child.graduationPresentCost,
-      inflationPercent: child.graduationInflationPercent,
-      yearsToGoal: yearsToGraduation,
-      annualReturnPercent,
-      annualStepUpPercent,
-      lumpSumToday,
-      applyLumpSum: true,
-    })
-
-    const postGraduation = calculateEducationGoal({
-      presentCost: child.postGraduationPresentCost,
-      inflationPercent: child.postGraduationInflationPercent,
-      yearsToGoal: yearsToPostGraduation,
-      annualReturnPercent,
-      annualStepUpPercent,
-      lumpSumToday: 0,
-      applyLumpSum: false,
-    })
-
-    return {
-      name: child.name,
-      currentAge: child.currentAge,
-      graduation,
-      postGraduation,
+  const goals = []
+  children.forEach((child, childIndex) => {
+    const plans = [
+      ['graduation', child.graduation],
+      ['postGraduation', child.postGraduation],
+    ]
+    for (const [type, plan] of plans) {
+      if (!plan) continue
+      const yearsToGoal = plan.targetAge - child.currentAge
+      goals.push({
+        childIndex,
+        type,
+        plan,
+        yearsToGoal,
+        futureValue: calculateInflationAdjustedValue(
+          plan.presentCost,
+          plan.inflationPercent,
+          yearsToGoal
+        ),
+      })
     }
   })
 
-  return { childResults }
+  const { allocations, unallocatedLumpSum } = allocateLumpSumToGoals(
+    goals,
+    lumpSumToday,
+    annualReturnPercent
+  )
+
+  const childResults = children.map((child) => ({
+    name: child.name,
+    currentAge: child.currentAge,
+    graduation: null,
+    postGraduation: null,
+  }))
+
+  const totals = {
+    futureValue: 0,
+    fixedSipRequired: 0,
+    initialStepUpSipRequired: 0,
+    lumpSumAllocated: 0,
+  }
+
+  goals.forEach((goal, index) => {
+    const result = {
+      ...calculateEducationGoal({
+        presentCost: goal.plan.presentCost,
+        inflationPercent: goal.plan.inflationPercent,
+        yearsToGoal: goal.yearsToGoal,
+        annualReturnPercent,
+        annualStepUpPercent,
+        lumpSumContributionFv: allocations[index].lumpSumContributionFv,
+      }),
+      lumpSumAllocated: allocations[index].lumpSumAllocated,
+    }
+    childResults[goal.childIndex][goal.type] = result
+    totals.futureValue += result.futureValue
+    totals.fixedSipRequired += result.fixedSipRequired
+    totals.initialStepUpSipRequired += result.initialStepUpSipRequired
+    totals.lumpSumAllocated += result.lumpSumAllocated
+  })
+
+  return { childResults, totals, unallocatedLumpSum }
 }
 
 // ---------------------------------------------------------------------------
@@ -559,7 +704,7 @@ export function calculateRetirementResults({
   lifeExpectancy,
   preRetirementReturnPercent,
   stepUpSipPercent,
-  lumpSumSaved,
+  lumpSumSaved = 0,
   postRetirementReturnPercent,
   postRetirementInflationPercent,
 }) {
@@ -585,36 +730,38 @@ export function calculateRetirementResults({
     yearsToRetirement
   )
 
-  const additionalCorpusNeeded =
-    totalRetirementCorpusNeeded - futureValueOfCurrentSavings
+  // Savings beyond the corpus leave nothing to fund; the excess is a surplus
+  const shortfall = totalRetirementCorpusNeeded - futureValueOfCurrentSavings
+  const additionalCorpusNeeded = Math.max(0, shortfall)
+  const surplusAtRetirement = Math.max(0, -shortfall)
 
-  const monthlySipRequiredFixed = solveRequiredFixedSip({
-    targetAmount: totalRetirementCorpusNeeded,
-    annualReturnPercent: preRetirementReturnPercent,
-    years: yearsToRetirement,
-    lumpSum: lumpSumSaved,
-  })
+  const monthlySipRequiredFixed = roundToPaise(
+    calculateRequiredSipForCorpus(
+      additionalCorpusNeeded,
+      preRetirementReturnPercent,
+      yearsToRetirement
+    )
+  )
 
-  const stepUpSipStartingAmount = solveInitialStepUpSip({
-    targetAmount: totalRetirementCorpusNeeded,
+  const stepUpSipStartingAmount = resolveInitialStepUpSip({
+    corpus: additionalCorpusNeeded,
     annualReturnPercent: preRetirementReturnPercent,
     years: yearsToRetirement,
     annualStepUpPercent: stepUpSipPercent,
-    lumpSum: lumpSumSaved,
+    fixedSip: monthlySipRequiredFixed,
+    search: STEP_UP_SEARCH.retirement,
   })
 
   return {
+    yearsToRetirement,
+    retirementYears,
     annualExpensesAtRetirement,
     totalRetirementCorpusNeeded,
     futureValueOfCurrentSavings,
     additionalCorpusNeeded,
+    surplusAtRetirement,
     monthlySipRequiredFixed,
     stepUpSipStartingAmount,
-    totalInvested: lumpSumSaved,
-    futureValue: totalRetirementCorpusNeeded,
-    estimatedProfit: totalRetirementCorpusNeeded - lumpSumSaved,
-    wealthGain: totalRetirementCorpusNeeded - lumpSumSaved,
-    finalCorpus: totalRetirementCorpusNeeded,
   }
 }
 
@@ -622,6 +769,7 @@ export function calculateRetirementResults({
 // Yearly projections
 // ---------------------------------------------------------------------------
 
+/** Interest Earned is the growth during that year only */
 export function buildSipYearlyProjection({
   monthlyAmount,
   annualReturnPercent,
@@ -629,35 +777,28 @@ export function buildSipYearlyProjection({
   lumpSum = 0,
 }) {
   const rows = []
+  const annualInvestment = monthlyAmount * 12
+  let previousValue = lumpSum
 
-  for (let year = 1; year <= years; year++) {
-    const months = year * 12
-    const annualInvestment = monthlyAmount * 12
-    const cumulativeInvestment = monthlyAmount * months + lumpSum
-    const sipFutureValue = calculateSipFutureValue(
-      monthlyAmount,
-      annualReturnPercent,
-      months
-    )
-    const lumpSumFutureValue = calculateLumpSumFutureValue(
-      lumpSum,
-      annualReturnPercent,
-      year
-    )
-    const portfolioValue = sipFutureValue + lumpSumFutureValue
+  for (let year = 1; year <= toWholeYears(years); year++) {
+    const portfolioValue =
+      calculateSipFutureValue(monthlyAmount, annualReturnPercent, year * 12) +
+      calculateLumpSumFutureValue(lumpSum, annualReturnPercent, year)
 
     rows.push({
       year,
       annualInvestment,
-      cumulativeInvestment,
-      interestEarned: portfolioValue - cumulativeInvestment,
+      cumulativeInvestment: annualInvestment * year + lumpSum,
+      interestEarned: portfolioValue - previousValue - annualInvestment,
       portfolioValue,
     })
+    previousValue = portfolioValue
   }
 
   return rows
 }
 
+/** Interest Earned is the growth during that year only */
 export function buildStepUpYearlyProjection({
   initialMonthlyAmount,
   annualReturnPercent,
@@ -671,8 +812,9 @@ export function buildStepUpYearlyProjection({
   let monthlySip = initialMonthlyAmount
   const rows = []
 
-  for (let year = 1; year <= years; year++) {
+  for (let year = 1; year <= toWholeYears(years); year++) {
     const sipAtYearStart = monthlySip
+    const balanceAtYearStart = balance
     let annualInvestment = 0
 
     for (let month = 0; month < 12; month++) {
@@ -683,21 +825,13 @@ export function buildStepUpYearlyProjection({
 
     monthlySip *= 1 + annualStepUpPercent / 100
 
-    const lumpSumFutureValue = calculateLumpSumFutureValue(
-      lumpSum,
-      annualReturnPercent,
-      year
-    )
-
     rows.push({
       year,
       monthlySip: sipAtYearStart,
       annualInvestment,
       cumulativeInvestment: totalInvested,
-      sipFutureValue: balance - lumpSumFutureValue,
-      lumpSumFutureValue,
+      interestEarned: balance - balanceAtYearStart - annualInvestment,
       portfolioValue: balance,
-      interestEarned: balance - totalInvested,
     })
   }
 
@@ -722,15 +856,5 @@ export function buildGoalBasedYearlyProjection({
     annualReturnPercent,
     years,
     lumpSum,
-  })
-}
-
-/** @deprecated alias */
-export function calculateRequiredMonthlySip(params) {
-  return solveRequiredFixedSip({
-    targetAmount: params.targetAmount,
-    annualReturnPercent: params.annualReturnPercent,
-    years: params.years,
-    lumpSum: params.lumpSum,
   })
 }

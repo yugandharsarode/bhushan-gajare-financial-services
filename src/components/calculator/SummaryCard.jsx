@@ -13,13 +13,13 @@ function SummaryCard({ label, value, decimals = 0, accent = 'slate', delay = 0 }
 
   return (
     <div
-      className={`hero-animate-in rounded-xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-5 ${accentBorder[accent] || accentBorder.slate}`}
+      className={`hero-animate-in flex min-w-0 flex-col rounded-xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md sm:p-5 ${accentBorder[accent] || accentBorder.slate}`}
       style={{ animationDelay: `${delay}s`, opacity: 0 }}
     >
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <p className="text-xs font-semibold uppercase leading-snug tracking-wider text-slate-500">
         {label}
       </p>
-      <div className="mt-2">
+      <div className="mt-auto pt-2">
         <CurrencyAmount value={value} size="md" decimals={decimals} />
       </div>
     </div>

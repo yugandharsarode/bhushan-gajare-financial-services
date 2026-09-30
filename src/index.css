@@ -1,5 +1,47 @@
 @import "tailwindcss";
 
+/*
+ * The Google Fonts build of Poppins draws the rupee sign (U+20B9) as an
+ * invisible, zero-width glyph in Firefox. Take just that character from a
+ * system font, for each Poppins weight the site loads (300-600, see
+ * index.html). Declared after the Google Fonts stylesheet, so it wins for ₹;
+ * other characters and weights still use Poppins as before.
+ */
+@font-face {
+  font-family: "Poppins";
+  src: local("Segoe UI"), local("Noto Sans"), local("NotoSans-Regular"), local("DejaVu Sans"),
+    local("Roboto"), local("Helvetica Neue"), local("Arial");
+  unicode-range: U+20B9;
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: local("Segoe UI"), local("Noto Sans"), local("NotoSans-Regular"), local("DejaVu Sans"),
+    local("Roboto"), local("Helvetica Neue"), local("Arial");
+  unicode-range: U+20B9;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: local("Segoe UI Semibold"), local("Segoe UI"), local("Noto Sans Medium"), local("Noto Sans"),
+    local("NotoSans-Regular"), local("DejaVu Sans"), local("Roboto Medium"), local("Roboto"),
+    local("Helvetica Neue"), local("Arial");
+  unicode-range: U+20B9;
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Poppins";
+  src: local("Segoe UI Semibold"), local("Segoe UI"), local("Noto Sans SemiBold"), local("Noto Sans"),
+    local("NotoSans-Regular"), local("DejaVu Sans"), local("Roboto Medium"), local("Roboto"),
+    local("Helvetica Neue"), local("Arial");
+  unicode-range: U+20B9;
+  font-weight: 600;
+  font-display: swap;
+}
+
 @theme {
   --font-sans: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, sans-serif;
@@ -104,6 +146,91 @@ h6 {
   @apply border-[#d4af37] bg-[#d4af37] text-brand-900 outline-none;
   transform: translateY(-1px);
   box-shadow: 0 10px 22px rgba(212, 175, 55, 0.24);
+}
+
+/* Calculator slider: blue fill, gold thumb */
+.calc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 6px;
+  margin: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    #0f3d91 0%,
+    #0f3d91 var(--fill, 0%),
+    #e2e8f0 var(--fill, 0%),
+    #e2e8f0 100%
+  );
+  outline: none;
+}
+
+.calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #d4af37;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(11, 31, 77, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.calc-range::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #d4af37;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(11, 31, 77, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.calc-range::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+}
+
+.calc-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: #0f3d91;
+}
+
+/* No value entered yet: muted thumb */
+.calc-range[data-empty='true']::-webkit-slider-thumb {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
+.calc-range[data-empty='true']::-moz-range-thumb {
+  border-color: #cbd5e1;
+  box-shadow: none;
+}
+
+.calc-range:hover::-webkit-slider-thumb,
+.calc-range:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+.calc-range:hover::-moz-range-thumb,
+.calc-range:active::-moz-range-thumb {
+  transform: scale(1.12);
+}
+
+.calc-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(15, 61, 145, 0.22);
+}
+
+.calc-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(15, 61, 145, 0.22);
 }
 
 /* Unified card system */

@@ -1,13 +1,15 @@
 import { useState, useCallback } from 'react'
-import {
-  validateRequiredPositive,
-  validateOptionalNonNegative,
-} from '../utils/calculatorValidation'
+import { validateFields, toNumericValues } from '../utils/calculatorValidation'
 
 /**
  * Shared form state and validation for calculators.
+ *
+ * @param initialForm   initial string values for every input
+ * @param schema        field rules (see utils/calculatorValidation.js)
+ * @param crossValidate optional (values, fieldErrors) => extra errors for
+ *                      rules that span several fields
  */
-export function useCalculatorForm(initialForm, fieldLabels) {
+export function useCalculatorForm(initialForm, schema, crossValidate) {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
@@ -26,27 +28,10 @@ export function useCalculatorForm(initialForm, fieldLabels) {
   )
 
   const validate = useCallback(() => {
-    const requiredFields = {}
-    const optionalFields = {}
-    const nextErrors = {}
-
-    for (const [key, config] of Object.entries(fieldLabels)) {
-      if (config.required) {
-        requiredFields[key] = { value: form[key], label: config.label }
-      } else if (config.optional) {
-        optionalFields[key] = config.label
-      }
-    }
-
-    Object.assign(nextErrors, validateRequiredPositive(requiredFields))
-
-    for (const [key, label] of Object.entries(optionalFields)) {
-      const err = validateOptionalNonNegative(form[key], label)
-      if (err) nextErrors[key] = err
-    }
-
-    return nextErrors
-  }, [form, fieldLabels])
+    const fieldErrors = validateFields(form, schema)
+    const extraErrors = crossValidate ? crossValidate(form, fieldErrors) : {}
+    return { ...extraErrors, ...fieldErrors }
+  }, [form, schema, crossValidate])
 
   const reset = useCallback(() => {
     setForm(initialForm)
@@ -54,20 +39,7 @@ export function useCalculatorForm(initialForm, fieldLabels) {
     setSubmitted(false)
   }, [initialForm])
 
-  const getNumericValues = useCallback(
-    (optionalKeys = []) => {
-      const values = {}
-      for (const key of Object.keys(form)) {
-        if (optionalKeys.includes(key) && form[key] === '') {
-          values[key] = 0
-        } else {
-          values[key] = Number(form[key])
-        }
-      }
-      return values
-    },
-    [form]
-  )
+  const getNumericValues = useCallback(() => toNumericValues(form, schema), [form, schema])
 
   return {
     form,

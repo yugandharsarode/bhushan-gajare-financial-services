@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import {
   HiOutlineFlag,
-  HiOutlineBanknotes,
   HiOutlineArrowTrendingUp,
   HiOutlineCurrencyRupee,
 } from 'react-icons/hi2'
@@ -9,6 +8,7 @@ import CalculatorLayout from '../../components/calculator/CalculatorLayout'
 import CalculatorPageShell from '../../components/calculator/CalculatorPageShell'
 import CalculatorFormPanel from '../../components/calculator/CalculatorFormPanel'
 import CalculatorEmptyState from '../../components/calculator/CalculatorEmptyState'
+import FormSection from '../../components/calculator/FormSection'
 import InputField from '../../components/calculator/InputField'
 import ResultCard from '../../components/calculator/ResultCard'
 import SummaryCard from '../../components/calculator/SummaryCard'
@@ -17,6 +17,7 @@ import ProjectionTable from '../../components/calculator/ProjectionTable'
 import DownloadReportButton from '../../components/calculator/DownloadReportButton'
 import { calculatorRegistry } from '../../config/calculatorRegistry'
 import { useCalculatorForm } from '../../hooks/useCalculatorForm'
+import { goalBasedSipSchema } from '../../config/calculatorSchemas'
 import {
   calculateGoalBasedSipResults,
   buildGoalBasedYearlyProjection,
@@ -31,19 +32,12 @@ const INITIAL_FORM = {
   annualReturn: '',
 }
 
-const FIELD_LABELS = {
-  targetAmount: { label: 'Target goal amount', required: true },
-  years: { label: 'Investment period', required: true },
-  annualReturn: { label: 'Expected annual return', required: true },
-  lumpSum: { label: 'Initial lump sum investment', optional: true },
-}
-
 const PROJECTION_COLUMNS = [
   { key: 'year', label: 'Year' },
-  { key: 'annualInvestment', label: 'Annual Investment', type: 'currency', decimals: 2 },
-  { key: 'cumulativeInvestment', label: 'Cumulative Investment', type: 'currency', decimals: 2 },
-  { key: 'interestEarned', label: 'Interest Earned', type: 'currency', decimals: 2, highlight: true },
-  { key: 'portfolioValue', label: 'Portfolio Value', type: 'currency', decimals: 2 },
+  { key: 'annualInvestment', label: 'Annual Investment', type: 'currency' },
+  { key: 'cumulativeInvestment', label: 'Cumulative Investment', type: 'currency' },
+  { key: 'interestEarned', label: 'Interest for the Year', type: 'currency', highlight: true },
+  { key: 'portfolioValue', label: 'Portfolio Value', type: 'currency' },
 ]
 
 function GoalBasedSipCalculator() {
@@ -57,7 +51,7 @@ function GoalBasedSipCalculator() {
     validate,
     reset,
     getNumericValues,
-  } = useCalculatorForm(INITIAL_FORM, FIELD_LABELS)
+  } = useCalculatorForm(INITIAL_FORM, goalBasedSipSchema)
 
   const [results, setResults] = useState(null)
   const [projection, setProjection] = useState([])
@@ -73,7 +67,7 @@ function GoalBasedSipCalculator() {
       return
     }
 
-    const values = getNumericValues(['lumpSum'])
+    const values = getNumericValues()
     const computed = calculateGoalBasedSipResults({
       targetAmount: values.targetAmount,
       annualReturnPercent: values.annualReturn,
@@ -107,6 +101,7 @@ function GoalBasedSipCalculator() {
       icon={meta.icon}
     >
       <CalculatorPageShell
+        resultsKey={results}
         formPanel={
           <CalculatorFormPanel
             title="Goal Details"
@@ -115,60 +110,30 @@ function GoalBasedSipCalculator() {
             onReset={handleReset}
             submitLabel="Calculate Required SIP"
           >
-            <InputField
-              id="targetAmount"
-              label="Target Goal Amount"
-              prefix="₹"
-              value={form.targetAmount}
-              onChange={updateField('targetAmount')}
-              error={errors.targetAmount}
-              required
-              min="1"
-            />
-            <InputField
-              id="lumpSum"
-              label="Initial Lump Sum Investment"
-              prefix="₹"
-              value={form.lumpSum}
-              onChange={updateField('lumpSum')}
-              error={errors.lumpSum}
-              optional
-              min="0"
-              hint="Optional one-time investment at the start"
-            />
-            <InputField
-              id="years"
-              label="Investment Period"
-              suffix="yrs"
-              value={form.years}
-              onChange={updateField('years')}
-              error={errors.years}
-              required
-              min="1"
-              step="1"
-            />
-            <InputField
-              id="annualReturn"
-              label="Expected Annual Return"
-              suffix="%"
-              value={form.annualReturn}
-              onChange={updateField('annualReturn')}
-              error={errors.annualReturn}
-              required
-              min="0.01"
-              step="0.01"
-            />
+            <FormSection columns={4}>
+              <InputField id="targetAmount" label="Target Goal Amount" prefix="₹" value={form.targetAmount} onChange={updateField('targetAmount')} error={errors.targetAmount} required />
+              <InputField id="lumpSum" label="Initial Lump Sum Investment" prefix="₹" value={form.lumpSum} onChange={updateField('lumpSum')} error={errors.lumpSum} optional hint="One-time investment at the start" />
+              <InputField id="years" label="Investment Period" suffix="yrs" value={form.years} onChange={updateField('years')} error={errors.years} step="1" required hint="Whole years" range={{ min: 1, max: 40, step: 1 }} />
+              <InputField id="annualReturn" label="Expected Annual Return" suffix="%" value={form.annualReturn} onChange={updateField('annualReturn')} error={errors.annualReturn} step="0.01" required range={{ min: 0, max: 30, step: 0.1 }} />
+            </FormSection>
           </CalculatorFormPanel>
         }
         resultsPanel={
           submitted && results ? (
             <div className="flex flex-col gap-5 sm:gap-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-slate-900">Results Summary</h2>
+                <h2 className="text-xl font-semibold text-slate-900">Results Summary</h2>
                 <DownloadReportButton />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
+              {results.lumpSumCoversGoal && (
+                <p className="rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-3 text-sm text-emerald-800">
+                  Your lump sum alone is projected to reach this goal, so no monthly SIP is
+                  required.
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <ResultCard
                   label="Required Monthly SIP"
                   value={results.requiredMonthlySip}
@@ -178,9 +143,9 @@ function GoalBasedSipCalculator() {
                   decimals={2}
                 />
                 <ResultCard
-                  label="Future Value"
+                  label="Total Corpus Achieved"
                   value={results.totalCorpus}
-                  icon={HiOutlineBanknotes}
+                  icon={HiOutlineFlag}
                   accent="amber"
                   delay={0.15}
                 />
@@ -191,20 +156,12 @@ function GoalBasedSipCalculator() {
                   accent="emerald"
                   delay={0.2}
                 />
-                <ResultCard
-                  label="Total Corpus Achieved"
-                  value={results.totalCorpus}
-                  icon={HiOutlineFlag}
-                  accent="brand"
-                  delay={0.25}
-                />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <SummaryCard
-                  label="Required Monthly SIP"
-                  value={results.requiredMonthlySip}
-                  decimals={2}
+                  label="Total Amount Invested"
+                  value={results.totalInvested}
                   accent="brand"
                   delay={0.3}
                 />
@@ -236,8 +193,9 @@ function GoalBasedSipCalculator() {
               />
 
               <p className="text-xs leading-relaxed text-slate-500">
-                * Required SIP is computed to reach your goal assuming constant returns.
-                Actual market returns may vary. For illustration only, not financial advice.
+                * Required SIP assumes instalments at the start of each month and a lump sum
+                compounding annually, at constant returns. Actual market returns may vary.
+                For illustration only, not financial advice.
               </p>
             </div>
           ) : (

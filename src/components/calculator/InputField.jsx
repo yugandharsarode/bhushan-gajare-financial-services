@@ -1,7 +1,77 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef } from 'react'
+import {
+  fillPercent,
+  positionToValue,
+  sliderBounds,
+  valueToPosition,
+} from '../../utils/sliderScale'
+
+/** Group an integer digit string the Indian way: 12345678 → 1,23,45,678 */
+function groupIndianDigits(digits) {
+  const trimmed = digits.replace(/^0+(?=\d)/, '')
+  if (trimmed.length <= 3) return trimmed
+  const head = trimmed.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',')
+  return `${head},${trimmed.slice(-3)}`
+}
 
 /**
- * Reusable calculator input with floating label (no overlap with values).
+ * Keep a leading minus, digits and at most one decimal point (with a limited
+ * number of decimals). Anything that would change the number's meaning is
+ * kept rather than dropped, so validation can explain it ("must be a whole
+ * number", "cannot be negative").
+ */
+function sanitizeNumber(text, maxDecimals) {
+  let result = text.trimStart().startsWith('-') ? '-' : ''
+  let decimals = -1
+  for (const char of text) {
+    if (char >= '0' && char <= '9') {
+      if (decimals >= 0) {
+        if (decimals >= maxDecimals) continue
+        decimals++
+      }
+      result += char
+    } else if (char === '.' && decimals < 0) {
+      decimals = 0
+      result += char
+    }
+  }
+  return result
+}
+
+function formatAmount(raw) {
+  if (!raw) return ''
+  const sign = raw.startsWith('-') ? '-' : ''
+  const unsigned = raw.slice(sign.length)
+  if (!unsigned) return sign
+  const [whole, fraction] = unsigned.split('.')
+  const grouped = groupIndianDigits(whole) || '0'
+  return `${sign}${fraction === undefined ? grouped : `${grouped}.${fraction}`}`
+}
+
+const SIGNIFICANT = /[\d.-]/
+
+/** Position in `text` just after the n-th digit, decimal point or minus sign */
+function caretAfterSignificant(text, count) {
+  if (count <= 0) return 0
+  let seen = 0
+  for (let i = 0; i < text.length; i++) {
+    if (SIGNIFICANT.test(text[i])) seen++
+    if (seen === count) return i + 1
+  }
+  return text.length
+}
+
+/**
+ * Calculator input with the label above the box and the unit inside it.
+ *
+ * Numbers are typed into a text box (no browser spinners) and cleaned as you
+ * type: only a leading minus, digits and one decimal point are kept. Rupee
+ * amounts (prefix ₹) are shown with Indian digit grouping; the value passed to
+ * onChange never contains commas. Whole-number fields (step="1") get a
+ * numeric keypad on phones.
+ *
+ * Pass `range` (see utils/sliderScale.js) to show a slider under the box; the
+ * slider and the box always show the same value.
  */
 function InputField({
   id,
@@ -15,82 +85,100 @@ function InputField({
   suffix,
   required = false,
   optional = false,
-  min,
   step = 'any',
   hint,
+  placeholder = '',
+  range,
 }) {
-  const [focused, setFocused] = useState(false)
+  const inputRef = useRef(null)
+  const pendingCaret = useRef(null)
+  const isNumber = type !== 'text'
+  const isAmount = isNumber && prefix === '₹'
+  const wholeNumber = step === '1'
+  const maxDecimals = isAmount ? 2 : 4
+  const rawValue = value === null || value === undefined ? '' : String(value)
+  const displayValue = isAmount ? formatAmount(rawValue) : rawValue
   const hasError = Boolean(error)
-  const hasValue = String(value).length > 0
-  const floated = focused || hasValue
 
-  const prefixLeft = prefix ? 'pl-11' : 'pl-4'
-  const labelLeft = prefix ? 'left-11' : 'left-4'
+  useLayoutEffect(() => {
+    const input = inputRef.current
+    if (pendingCaret.current === null || !input || document.activeElement !== input) return
+    const position = caretAfterSignificant(displayValue, pendingCaret.current)
+    input.setSelectionRange(position, position)
+    pendingCaret.current = null
+  }, [displayValue])
 
-  const handleBlur = (e) => {
-    setFocused(false)
-    onBlur?.(e)
+  const handleChange = (e) => {
+    if (!isNumber) {
+      onChange(e)
+      return
+    }
+    const typed = e.target.value
+    const caret = e.target.selectionStart ?? typed.length
+    pendingCaret.current = typed.slice(0, caret).replace(/[^\d.-]/g, '').length
+    onChange({ target: { value: sanitizeNumber(typed, maxDecimals) } })
   }
+
+  const describedBy = hasError ? `${id}-error` : hint ? `${id}-hint` : undefined
 
   return (
     <div className="w-full">
+      <div className="mb-1.5 flex items-baseline justify-between gap-3">
+        <label
+          htmlFor={id}
+          className={`text-[11px] font-semibold uppercase tracking-wider ${
+            hasError ? 'text-red-600' : 'text-brand-700'
+          }`}
+        >
+          {label}
+        </label>
+        {optional && !required && (
+          <span className="shrink-0 text-[11px] font-medium text-slate-400">Optional</span>
+        )}
+      </div>
+
       <div
-        className={`relative min-h-[3.75rem] rounded-xl border bg-white transition-all duration-200 ${
+        className={`flex h-12 items-center gap-2 rounded-xl border bg-white px-4 transition-all duration-200 ${
           hasError
             ? 'border-red-300 ring-2 ring-red-100'
-            : focused
-              ? 'border-brand-500 ring-2 ring-brand-100'
-              : 'border-brand-100 hover:border-brand-300'
+            : 'border-brand-100 hover:border-brand-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100'
         }`}
       >
         {prefix && (
-          <span
-            className={`pointer-events-none absolute z-10 text-sm font-medium text-brand-600 transition-all duration-200 ${
-              floated ? 'left-4 top-[2.15rem]' : 'left-4 top-1/2 -translate-y-1/2'
-            }`}
-          >
+          <span className="shrink-0 text-sm font-semibold text-brand-600" aria-hidden="true">
             {prefix}
           </span>
         )}
-
         <input
+          ref={inputRef}
           id={id}
-          type={type}
-          value={value}
-          onChange={onChange}
-          onFocus={() => setFocused(true)}
-          onBlur={handleBlur}
-          min={min}
-          step={step}
-          inputMode={type === 'number' ? 'decimal' : undefined}
-          placeholder=" "
-          className={`w-full rounded-xl bg-transparent text-sm font-medium text-brand-800 outline-none ${prefixLeft} ${
-            suffix ? 'pr-12' : 'pr-4'
-          } ${floated ? 'pb-3 pt-7' : 'py-3.5'}`}
+          type="text"
+          inputMode={isNumber ? (wholeNumber ? 'numeric' : 'decimal') : undefined}
+          autoComplete="off"
+          value={displayValue}
+          onChange={handleChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          className="h-full w-full min-w-0 bg-transparent text-[15px] font-semibold tabular-nums text-brand-800 outline-none placeholder:font-normal placeholder:text-slate-400"
           aria-invalid={hasError}
-          aria-describedby={hasError ? `${id}-error` : hint ? `${id}-hint` : undefined}
+          aria-describedby={describedBy}
         />
-
-        <label
-          htmlFor={id}
-          className={`pointer-events-none absolute z-20 max-w-[calc(100%-2rem)] truncate transition-all duration-200 ${labelLeft} ${
-            floated
-              ? 'top-2 text-[11px] font-semibold uppercase tracking-wide text-brand-600'
-              : 'top-1/2 -translate-y-1/2 text-sm font-normal normal-case tracking-normal text-brand-600'
-          } ${hasError && floated ? 'text-red-600' : ''}`}
-        >
-          {label}
-          {optional && !required && !floated && (
-            <span className="text-brand-400"> (optional)</span>
-          )}
-        </label>
-
         {suffix && (
-          <span className="pointer-events-none absolute right-4 top-1/2 z-10 -translate-y-1/2 text-sm font-medium text-brand-600">
+          <span className="shrink-0 text-sm font-medium text-slate-500" aria-hidden="true">
             {suffix}
           </span>
         )}
       </div>
+
+      {range && isNumber && (
+        <RangeSlider
+          id={`${id}-range`}
+          label={label}
+          range={range}
+          value={rawValue}
+          onChange={(next) => onChange({ target: { value: String(next) } })}
+        />
+      )}
 
       {hasError && (
         <p id={`${id}-error`} className="mt-1.5 text-xs font-medium text-red-600" role="alert">
@@ -98,11 +186,35 @@ function InputField({
         </p>
       )}
       {!hasError && hint && (
-        <p id={`${id}-hint`} className="mt-1.5 text-xs text-brand-600">
+        <p id={`${id}-hint`} className="mt-1.5 text-xs leading-relaxed text-slate-500">
           {hint}
         </p>
       )}
     </div>
+  )
+}
+
+/** Slider bound to the same value as the text box */
+function RangeSlider({ id, label, range, value, onChange }) {
+  const numeric = value === '' ? NaN : Number(value)
+  const position = valueToPosition(numeric, range)
+  const bounds = sliderBounds(range)
+  const filled = Number.isFinite(numeric) ? fillPercent(position, range) : 0
+
+  return (
+    <input
+      id={id}
+      type="range"
+      min={bounds.min}
+      max={bounds.max}
+      step={bounds.step}
+      value={position}
+      onChange={(e) => onChange(positionToValue(Number(e.target.value), range))}
+      className="calc-range mt-3"
+      data-empty={Number.isFinite(numeric) ? undefined : 'true'}
+      style={{ '--fill': `${filled}%` }}
+      aria-label={`${label} slider`}
+    />
   )
 }
 

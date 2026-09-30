@@ -9,7 +9,8 @@ const accentStyles = {
 }
 
 /**
- * Premium summary card for calculator results.
+ * Premium summary card for calculator results: label and icon on top,
+ * the amount on its own line below.
  */
 function ResultCard({
   label,
@@ -20,32 +21,32 @@ function ResultCard({
   animate = true,
   decimals = 0,
 }) {
+  const gradient = accentStyles[accent] || accentStyles.brand
+
   return (
     <article
-      className={`group hydro-card relative overflow-hidden rounded-xl p-5 transition-all duration-500 hover:-translate-y-0.5 sm:p-6 ${
+      className={`group hydro-card @container relative flex min-w-0 flex-col overflow-hidden rounded-xl p-5 transition-all duration-500 hover:-translate-y-0.5 sm:p-6 ${
         animate ? 'hero-animate-in' : ''
       }`}
       style={animate ? { animationDelay: `${delay}s`, opacity: 0 } : undefined}
     >
       <div
-        className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${accentStyles[accent] || accentStyles.brand} opacity-[0.08] transition-transform duration-500 group-hover:scale-110`}
+        className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${gradient} opacity-[0.08] transition-transform duration-500 group-hover:scale-110`}
       />
-      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">
-            {label}
-          </p>
-          <div className="mt-2">
-            <CurrencyAmount value={value} size="lg" decimals={decimals} />
-          </div>
-        </div>
+      <div className="relative flex items-start justify-between gap-3">
+        <p className="min-w-0 text-xs font-semibold uppercase leading-snug tracking-wider text-brand-600">
+          {label}
+        </p>
         {Icon && (
           <div
-            className={`flex h-10 w-10 shrink-0 items-center justify-center self-start rounded-xl bg-gradient-to-br sm:h-11 sm:w-11 ${accentStyles[accent] || accentStyles.brand} text-white shadow-md`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-white shadow-md`}
           >
-            <Icon className="h-5 w-5" aria-hidden="true" />
+            <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
           </div>
         )}
+      </div>
+      <div className="relative mt-auto pt-3">
+        <CurrencyAmount value={value} size="lg" decimals={decimals} />
       </div>
     </article>
   )

@@ -8,6 +8,7 @@ import CalculatorLayout from '../../components/calculator/CalculatorLayout'
 import CalculatorPageShell from '../../components/calculator/CalculatorPageShell'
 import CalculatorFormPanel from '../../components/calculator/CalculatorFormPanel'
 import CalculatorEmptyState from '../../components/calculator/CalculatorEmptyState'
+import FormSection from '../../components/calculator/FormSection'
 import InputField from '../../components/calculator/InputField'
 import ResultCard from '../../components/calculator/ResultCard'
 import SummaryCard from '../../components/calculator/SummaryCard'
@@ -16,6 +17,7 @@ import ProjectionTable from '../../components/calculator/ProjectionTable'
 import DownloadReportButton from '../../components/calculator/DownloadReportButton'
 import { calculatorRegistry } from '../../config/calculatorRegistry'
 import { useCalculatorForm } from '../../hooks/useCalculatorForm'
+import { stepUpSipSchema, validateStepUpSipCross } from '../../config/calculatorSchemas'
 import {
   calculateStepUpSipResults,
   buildStepUpYearlyProjection,
@@ -31,20 +33,12 @@ const INITIAL_FORM = {
   annualReturn: '',
 }
 
-const FIELD_LABELS = {
-  initialMonthlyAmount: { label: 'Initial monthly SIP amount', required: true },
-  years: { label: 'Investment period', required: true },
-  annualStepUp: { label: 'Annual step-up percentage', required: true },
-  annualReturn: { label: 'Expected annual return', required: true },
-  lumpSum: { label: 'Lump sum investment', optional: true },
-}
-
 const PROJECTION_COLUMNS = [
   { key: 'year', label: 'Year' },
   { key: 'monthlySip', label: 'Monthly SIP', type: 'currency', decimals: 2 },
   { key: 'annualInvestment', label: 'Annual Investment', type: 'currency' },
   { key: 'cumulativeInvestment', label: 'Cumulative Investment', type: 'currency' },
-  { key: 'interestEarned', label: 'Interest Earned', type: 'currency', highlight: true },
+  { key: 'interestEarned', label: 'Interest for the Year', type: 'currency', highlight: true },
   { key: 'portfolioValue', label: 'Portfolio Value', type: 'currency' },
 ]
 
@@ -59,7 +53,7 @@ function StepUpSipCalculator() {
     validate,
     reset,
     getNumericValues,
-  } = useCalculatorForm(INITIAL_FORM, FIELD_LABELS)
+  } = useCalculatorForm(INITIAL_FORM, stepUpSipSchema, validateStepUpSipCross)
 
   const [results, setResults] = useState(null)
   const [projection, setProjection] = useState([])
@@ -75,7 +69,7 @@ function StepUpSipCalculator() {
       return
     }
 
-    const values = getNumericValues(['lumpSum'])
+    const values = getNumericValues()
     const computed = calculateStepUpSipResults({
       initialMonthlyAmount: values.initialMonthlyAmount,
       annualReturnPercent: values.annualReturn,
@@ -111,6 +105,7 @@ function StepUpSipCalculator() {
       icon={meta.icon}
     >
       <CalculatorPageShell
+        resultsKey={results}
         formPanel={
           <CalculatorFormPanel
             title="Step-Up SIP Details"
@@ -118,71 +113,24 @@ function StepUpSipCalculator() {
             onSubmit={handleCalculate}
             onReset={handleReset}
           >
-            <InputField
-              id="initialMonthlyAmount"
-              label="Initial Monthly SIP Amount"
-              prefix="₹"
-              value={form.initialMonthlyAmount}
-              onChange={updateField('initialMonthlyAmount')}
-              error={errors.initialMonthlyAmount}
-              required
-              min="1"
-            />
-            <InputField
-              id="lumpSum"
-              label="Lump Sum Investment"
-              prefix="₹"
-              value={form.lumpSum}
-              onChange={updateField('lumpSum')}
-              error={errors.lumpSum}
-              optional
-              min="0"
-              hint="One-time amount at the start (leave blank if none)"
-            />
-            <InputField
-              id="years"
-              label="Investment Period"
-              suffix="yrs"
-              value={form.years}
-              onChange={updateField('years')}
-              error={errors.years}
-              required
-              min="1"
-              step="1"
-            />
-            <InputField
-              id="annualStepUp"
-              label="Annual Step-Up Percentage"
-              suffix="%"
-              value={form.annualStepUp}
-              onChange={updateField('annualStepUp')}
-              error={errors.annualStepUp}
-              required
-              min="0.01"
-              step="0.01"
-            />
-            <InputField
-              id="annualReturn"
-              label="Expected Annual Return"
-              suffix="%"
-              value={form.annualReturn}
-              onChange={updateField('annualReturn')}
-              error={errors.annualReturn}
-              required
-              min="0.01"
-              step="0.01"
-            />
+            <FormSection columns={5}>
+              <InputField id="initialMonthlyAmount" label="Initial Monthly SIP" prefix="₹" value={form.initialMonthlyAmount} onChange={updateField('initialMonthlyAmount')} error={errors.initialMonthlyAmount} required />
+              <InputField id="lumpSum" label="Lump Sum Investment" prefix="₹" value={form.lumpSum} onChange={updateField('lumpSum')} error={errors.lumpSum} optional hint="One-time amount at the start" />
+              <InputField id="annualStepUp" label="Annual Step-Up" suffix="%" value={form.annualStepUp} onChange={updateField('annualStepUp')} error={errors.annualStepUp} step="0.01" required hint="SIP rises every 12 instalments" range={{ min: 0, max: 50, step: 0.5 }} />
+              <InputField id="annualReturn" label="Expected Annual Return" suffix="%" value={form.annualReturn} onChange={updateField('annualReturn')} error={errors.annualReturn} step="0.01" required range={{ min: 0, max: 30, step: 0.1 }} />
+              <InputField id="years" label="Investment Period" suffix="yrs" value={form.years} onChange={updateField('years')} error={errors.years} step="1" required hint="Whole years" range={{ min: 1, max: 40, step: 1 }} />
+            </FormSection>
           </CalculatorFormPanel>
         }
         resultsPanel={
           submitted && results ? (
             <div className="flex flex-col gap-5 sm:gap-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold text-slate-900">Results Summary</h2>
+                <h2 className="text-xl font-semibold text-slate-900">Results Summary</h2>
                 <DownloadReportButton />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <ResultCard
                   label="Total Amount Invested"
                   value={results.totalInvested}
@@ -203,13 +151,6 @@ function StepUpSipCalculator() {
                   icon={HiOutlineArrowTrendingUp}
                   accent="emerald"
                   delay={0.2}
-                />
-                <ResultCard
-                  label="Total Corpus Value"
-                  value={results.totalCorpus}
-                  icon={HiOutlineBanknotes}
-                  accent="brand"
-                  delay={0.25}
                 />
               </div>
 
@@ -240,8 +181,10 @@ function StepUpSipCalculator() {
               />
 
               <p className="text-xs leading-relaxed text-slate-500">
-                * SIP amount increases annually by the step-up percentage. Projections
-                assume constant returns. Actual returns may vary. For illustration only.
+                * The SIP is invested at the start of each month and increases by the
+                step-up percentage every 12 instalments. The lump sum compounds annually.
+                Projections assume constant returns. Actual returns may vary. For
+                illustration only.
               </p>
             </div>
           ) : (
