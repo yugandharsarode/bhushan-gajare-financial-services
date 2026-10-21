@@ -67,6 +67,10 @@
 
   --color-accent-500: #d4af37;
   --color-accent-600: #b38f24;
+
+  /* Form field borders (blue-grey): at least 3:1 against white and brand-50 */
+  --color-field: #7d8eae;
+  --color-field-hover: #5f79ad;
 }
 
 html {
@@ -231,6 +235,16 @@ h6 {
 
 .calc-range:focus-visible::-moz-range-thumb {
   box-shadow: 0 0 0 4px rgba(15, 61, 145, 0.22);
+}
+
+/* Consultation form: keep browser autofill from painting the dark fields white */
+.consult-field:-webkit-autofill,
+.consult-field:-webkit-autofill:hover,
+.consult-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #17336f inset;
+  caret-color: #ffffff;
+  transition: background-color 9999s ease-out 0s;
 }
 
 /* Unified card system */

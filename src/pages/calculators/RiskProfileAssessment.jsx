@@ -153,10 +153,10 @@ function RiskProfileAssessment() {
                         return (
                           <label
                             key={option.label}
-                            className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-all has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-300 ${
+                            className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-all has-[:focus-visible]:border-brand-600 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-brand-600/15 ${
                               selected
                                 ? 'border-brand-600 bg-brand-600 font-medium text-white shadow-sm'
-                                : 'border-slate-200 bg-white text-slate-700 hover:border-brand-400 hover:text-brand-800'
+                                : 'border-field bg-white text-slate-700 hover:border-field-hover hover:text-brand-800'
                             }`}
                           >
                             <input

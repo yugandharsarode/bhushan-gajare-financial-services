@@ -140,8 +140,8 @@ function InputField({
       <div
         className={`flex h-12 items-center gap-2 rounded-xl border bg-white px-4 transition-all duration-200 ${
           hasError
-            ? 'border-red-300 ring-2 ring-red-100'
-            : 'border-brand-100 hover:border-brand-300 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-100'
+            ? 'border-red-500 ring-[3px] ring-red-100 focus-within:ring-red-200'
+            : 'border-field hover:border-field-hover focus-within:border-brand-600 focus-within:ring-[3px] focus-within:ring-brand-600/15'
         }`}
       >
         {prefix && (

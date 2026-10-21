@@ -50,6 +50,32 @@ export function validateSipCross(values, fieldErrors) {
   return {}
 }
 
+/** SIP to SWP Journey Planner, the optional mode of the SIP calculator (Build fields are the SIP fields) */
+export const sipSwpJourneySchema = {
+  monthlyAmount: amount('Monthly SIP amount', { required: true, allowZero: true }),
+  lumpSum: amount('Lump sum investment'),
+  annualReturn: percent('Expected annual return', { required: true, allowZero: true }),
+  years: wholeYears('Build duration', 50, { required: true }),
+  growReturn: percent('Expected return during growth', { allowZero: true }),
+  growYears: wholeYears('Grow duration', 50, { required: true, allowZero: true, min: 0 }),
+  monthlyWithdrawal: amount('Monthly withdrawal', { required: true }),
+  withdrawReturn: percent('Expected return during withdrawals', { required: true, allowZero: true }),
+  withdrawYears: wholeYears('Withdrawal duration', 50, { required: true }),
+}
+
+export function validateSipSwpJourneyCross(values, fieldErrors) {
+  const errors = { ...validateSipCross(values, fieldErrors) }
+  // The growth return only matters when there is a Grow stage
+  if (
+    fieldsValid(fieldErrors, 'growYears', 'growReturn') &&
+    numeric(values.growYears) > 0 &&
+    isBlank(values.growReturn)
+  ) {
+    errors.growReturn = 'Expected return during growth is required'
+  }
+  return errors
+}
+
 export const goalBasedSipSchema = {
   targetAmount: amount('Target goal amount', { required: true }),
   lumpSum: amount('Initial lump sum investment'),

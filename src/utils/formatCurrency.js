@@ -40,3 +40,14 @@ export function formatIndianNumber(value, options = {}) {
     maximumFractionDigits,
   }).format(num)
 }
+
+/** Compact amounts for chart axes, in lakh / crore: ₹1.5L, ₹80L, ₹1.2Cr */
+export function formatCompactCurrency(value) {
+  const abs = Math.abs(value)
+  const sign = value < 0 ? '-' : ''
+  const short = (n) => String(Number(n.toFixed(n >= 10 ? 0 : 1)))
+  if (abs >= 1e7) return `${sign}₹${short(abs / 1e7)}Cr`
+  if (abs >= 1e5) return `${sign}₹${short(abs / 1e5)}L`
+  if (abs >= 1e3) return `${sign}₹${short(abs / 1e3)}K`
+  return `${sign}₹${abs.toFixed(0)}`
+}

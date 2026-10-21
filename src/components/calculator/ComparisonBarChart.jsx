@@ -9,20 +9,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { formatIndianCurrency } from '../../utils/formatCurrency'
+import { formatCompactCurrency, formatIndianCurrency } from '../../utils/formatCurrency'
 
 const BAR_COLORS = ['#1d4ed8', '#d4af37', '#10b981']
-
-/** Compact axis labels in lakh / crore: ₹1.5L, ₹80L, ₹1.2Cr */
-function formatAxisAmount(value) {
-  const abs = Math.abs(value)
-  const sign = value < 0 ? '-' : ''
-  const short = (n) => String(Number(n.toFixed(n >= 10 ? 0 : 1)))
-  if (abs >= 1e7) return `${sign}₹${short(abs / 1e7)}Cr`
-  if (abs >= 1e5) return `${sign}₹${short(abs / 1e5)}L`
-  if (abs >= 1e3) return `${sign}₹${short(abs / 1e3)}K`
-  return `${sign}₹${abs.toFixed(0)}`
-}
 
 /**
  * Side-by-side comparison of a few rupee amounts.
@@ -50,7 +39,7 @@ function ComparisonBarChart({ title, subtitle, bars }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#334155' }} tickLine={false} />
             <YAxis
-              tickFormatter={formatAxisAmount}
+              tickFormatter={formatCompactCurrency}
               tick={{ fontSize: 12, fill: '#64748b' }}
               tickLine={false}
               axisLine={false}
